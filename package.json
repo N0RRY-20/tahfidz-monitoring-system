@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "npx drizzle-kit push",
-    "db:seed": "npx tsx scripts/seed.ts"
+    "db:seed": "npx tsx scripts/seed.ts",
+    "db:seed-quran": "npx tsx scripts/seed-quran.ts",
+    "db:seed-tags": "npx tsx scripts/seed-tags.ts",
+    "db:seed-classes": "npx tsx scripts/seed-classes.ts",
+    "db:seed-all": "npx tsx scripts/seed.ts && npx tsx scripts/seed-quran.ts && npx tsx scripts/seed-tags.ts && npx tsx scripts/seed-classes.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

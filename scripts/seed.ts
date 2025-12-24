@@ -13,22 +13,35 @@ async function seed() {
     .values({
       id: "role_admin",
       name: "admin",
-      description: "Administrator with full access",
+      description: "Super Admin / Operator Pondok dengan akses penuh",
     })
     .onConflictDoNothing()
     .returning();
 
-  const userRoleData = await db
+  const guruRole = await db
     .insert(role)
     .values({
-      id: "role_user",
-      name: "user",
-      description: "Regular user",
+      id: "role_guru",
+      name: "guru",
+      description: "Guru Tahfidz / Musyrif yang menginput setoran santri",
     })
     .onConflictDoNothing()
     .returning();
 
-  console.log("✅ Roles created:", adminRole.length + userRoleData.length);
+  const santriRole = await db
+    .insert(role)
+    .values({
+      id: "role_santri",
+      name: "santri",
+      description: "Akun Santri untuk login Wali Santri (read-only)",
+    })
+    .onConflictDoNothing()
+    .returning();
+
+  console.log(
+    "✅ Roles created:",
+    adminRole.length + guruRole.length + santriRole.length
+  );
 
   // Check if admin user exists
   const existingAdmin = await db
@@ -61,7 +74,8 @@ async function seed() {
   console.log("\n🎉 Seed completed!");
   console.log("\n📋 Summary:");
   console.log("   - Admin role: role_admin");
-  console.log("   - User role: role_user");
+  console.log("   - Guru role: role_guru");
+  console.log("   - Santri role: role_santri");
   console.log("   - Admin email: admin@example.com");
 }
 
