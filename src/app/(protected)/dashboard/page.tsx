@@ -23,38 +23,43 @@ export default async function DashboardPage() {
     .innerJoin(role, eq(userRole.roleId, role.id))
     .where(eq(userRole.userId, session.user.id));
 
+  // Check if user has no roles - redirect to onboarding
+  if (userRoles.length === 0) {
+    redirect("/onboarding");
+  }
+
   // Check if user is admin - redirect to admin dashboard
   const isAdmin = userRoles.some((r) => r.roleName === "admin");
-
   if (isAdmin) {
     redirect("/admin");
   }
 
-  // For non-admin users, show the user dashboard content here
-  // (instead of redirecting to avoid loop)
+  // Check if user is guru - redirect to guru dashboard
+  const isGuru = userRoles.some((r) => r.roleName === "guru");
+  if (isGuru) {
+    redirect("/guru");
+  }
+
+  // Check if user is santri/wali - redirect to santri dashboard
+  const isSantri = userRoles.some((r) => r.roleName === "santri");
+  if (isSantri) {
+    redirect("/santri");
+  }
+
+  // For other roles, show the generic user dashboard
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="text-3xl font-bold mb-6 dark:text-white">
           Welcome, {session.user.name}!
         </h1>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-600">Email: {session.user.email}</p>
-          <p className="text-gray-500 mt-2">
-            Roles:{" "}
-            {userRoles.length > 0
-              ? userRoles.map((r) => r.roleName).join(", ")
-              : "No role assigned"}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <p className="text-gray-600 dark:text-gray-300">
+            Email: {session.user.email}
           </p>
-        </div>
-
-        <div className="mt-6 flex gap-4">
-          <a
-            href="/user"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Go to User Dashboard
-          </a>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Roles: {userRoles.map((r) => r.roleName).join(", ")}
+          </p>
         </div>
       </div>
     </div>
