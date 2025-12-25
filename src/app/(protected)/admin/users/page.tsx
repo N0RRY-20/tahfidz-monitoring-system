@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -79,6 +79,7 @@ export default function KelolaUserPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "verified" | "pending">("all");
+  const hasFetched = useRef(false);
 
   // Assign role dialog
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -95,6 +96,29 @@ export default function KelolaUserPage() {
     userName: string;
   } | null>(null);
 
+  const fetchData = async () => {
+    try {
+      const [usersRes, rolesRes] = await Promise.all([
+        fetch("/api/admin/users"),
+        fetch("/api/admin/roles"),
+      ]);
+
+      if (!usersRes.ok || !rolesRes.ok) throw new Error("Failed to fetch");
+
+      const [usersData, rolesData] = await Promise.all([
+        usersRes.json(),
+        rolesRes.json(),
+      ]);
+
+      setUsers(usersData);
+      setRoles(rolesData);
+    } catch {
+      toast.error("Gagal memuat data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const res = await fetch("/api/admin/users");
@@ -103,25 +127,13 @@ export default function KelolaUserPage() {
       setUsers(data);
     } catch {
       toast.error("Gagal memuat data user");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchRoles = async () => {
-    try {
-      const res = await fetch("/api/admin/roles");
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      setRoles(data);
-    } catch {
-      toast.error("Gagal memuat data role");
     }
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchRoles();
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchData();
   }, []);
 
   const handleAssignRole = async () => {
