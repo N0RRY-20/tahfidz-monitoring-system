@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface KelasFormProps {
   open: boolean;
@@ -34,15 +34,11 @@ export function KelasFormDialog({
   onSubmit,
   submitting,
 }: KelasFormProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
-  useEffect(() => {
-    if (open) {
-      setName(initialData?.name || "");
-      setDescription(initialData?.description || "");
-    }
-  }, [open, initialData]);
+  // State initialized from props - parent should use key prop to reset when needed
+  const [name, setName] = useState(initialData?.name || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

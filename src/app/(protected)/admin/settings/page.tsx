@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Database, Users, BookOpen } from "lucide-react";
+import { Settings, Users, BookOpen, Shield, GraduationCap } from "lucide-react";
 
 export default async function SettingsPage() {
   const session = await auth.api.getSession({
@@ -12,136 +12,168 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Pengaturan</h1>
-        <p className="text-slate-600">Konfigurasi sistem SIM-Tahfidz</p>
+        <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+          Pengaturan
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          Informasi dan konfigurasi sistem SIM-Tahfidz
+        </p>
       </div>
 
       {/* System Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+      <Card className="border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <Settings className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
             Informasi Sistem
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-slate-500">Versi Aplikasi</p>
-              <p className="font-medium">SIM-Tahfidz v2.0</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500">Framework</p>
-              <p className="font-medium">Next.js 16 + Drizzle ORM</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500">Admin Login</p>
-              <p className="font-medium">{session?.user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500">Status</p>
-              <Badge className="bg-green-500">Active</Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Database Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Database
-          </CardTitle>
-        </CardHeader>
         <CardContent>
-          <p className="text-slate-600">
-            Database menggunakan PostgreSQL dengan Drizzle ORM.
-          </p>
-          <div className="mt-4 space-y-2">
-            <p className="text-sm">
-              <strong>Untuk menjalankan seed data:</strong>
-            </p>
-            <code className="block bg-slate-100 p-3 rounded text-sm">
-              npm run db:seed-all
-            </code>
-            <p className="text-xs text-slate-500 mt-2">
-              Ini akan menjalankan seed untuk roles, data Al-Qur&apos;an (114 surat), dan tags penilaian.
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Versi Aplikasi
+              </p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">
+                SIM-Tahfidz v2.0
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Admin Login
+              </p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+                {session?.user.email}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Status Sistem
+              </p>
+              <Badge className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 mt-1">
+                ● Active
+              </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Role Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Sistem Role
+      <Card className="border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            Sistem Role & Akses
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b">
-              <div>
-                <p className="font-medium">Admin</p>
-                <p className="text-sm text-slate-500">
-                  Super Admin dengan akses penuh ke semua fitur
-                </p>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border-l-4 border-blue-500">
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-blue-500" />
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Admin
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Super Admin dengan akses penuh ke semua fitur
+                  </p>
+                </div>
               </div>
-              <Badge>role_admin</Badge>
+              <Badge className="bg-blue-500 hover:bg-blue-600">Admin</Badge>
             </div>
-            <div className="flex items-center justify-between py-2 border-b">
-              <div>
-                <p className="font-medium">Guru</p>
-                <p className="text-sm text-slate-500">
-                  Guru Tahfidz yang menginput setoran santri
-                </p>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border-l-4 border-amber-500">
+              <div className="flex items-center gap-3">
+                <GraduationCap className="h-5 w-5 text-amber-500" />
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Guru
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Guru Tahfidz yang menginput setoran santri
+                  </p>
+                </div>
               </div>
-              <Badge variant="secondary">role_guru</Badge>
+              <Badge
+                variant="secondary"
+                className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+              >
+                Guru
+              </Badge>
             </div>
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-medium">Santri</p>
-                <p className="text-sm text-slate-500">
-                  Akun untuk Wali Santri (read-only)
-                </p>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border-l-4 border-green-500">
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-green-500" />
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Wali Santri
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Akun untuk melihat perkembangan hafalan (read-only)
+                  </p>
+                </div>
               </div>
-              <Badge variant="outline">role_santri</Badge>
+              <Badge
+                variant="outline"
+                className="border-green-500 text-green-600 dark:text-green-400"
+              >
+                Wali
+              </Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Mushaf Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+      <Card className="border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+              <BookOpen className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
             Standar Al-Qur&apos;an
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600">
-            Sistem menggunakan standar <strong>Mushaf Utsmani Pojok 15 Baris</strong> untuk
-            kalkulasi halaman dan estimasi target khatam.
+          <p className="text-slate-600 dark:text-slate-400 mb-4">
+            Sistem menggunakan standar{" "}
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+              Mushaf Utsmani Pojok 15 Baris
+            </span>{" "}
+            untuk kalkulasi halaman dan estimasi target khatam.
           </p>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-slate-500">Total Surat</p>
-              <p className="font-medium">114 Surat</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                114
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Surat
+              </p>
             </div>
-            <div>
-              <p className="text-slate-500">Total Juz</p>
-              <p className="font-medium">30 Juz</p>
+            <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                30
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Juz</p>
             </div>
-            <div>
-              <p className="text-slate-500">Total Ayat</p>
-              <p className="font-medium">6.236 Ayat</p>
+            <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                6.236
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Ayat</p>
             </div>
-            <div>
-              <p className="text-slate-500">Total Halaman</p>
-              <p className="font-medium">604 Halaman</p>
+            <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                604
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Halaman
+              </p>
             </div>
           </div>
         </CardContent>

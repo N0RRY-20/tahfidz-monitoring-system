@@ -20,7 +20,7 @@ import {
 import { Copy, Loader2, CheckCircle2, User, Key, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Guru, Kelas } from "./types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // --- Dialog Form Create / Edit ---
@@ -56,19 +56,11 @@ export function SantriFormDialog({
   kelasList,
   gurus,
 }: SantriFormProps) {
-  const [name, setName] = useState("");
-  const [classId, setClassId] = useState("");
-  const [guruId, setGuruId] = useState("");
-  const [dob, setDob] = useState("");
-
-  useEffect(() => {
-    if (open) {
-      setName(initialData?.name || "");
-      setClassId(initialData?.classId || "none");
-      setGuruId(initialData?.guruId || "none");
-      setDob(initialData?.dob || "");
-    }
-  }, [open, initialData]);
+  // State initialized from props - parent should use key prop to reset when needed
+  const [name, setName] = useState(initialData?.name || "");
+  const [classId, setClassId] = useState(initialData?.classId || "none");
+  const [guruId, setGuruId] = useState(initialData?.guruId || "none");
+  const [dob, setDob] = useState(initialData?.dob || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
