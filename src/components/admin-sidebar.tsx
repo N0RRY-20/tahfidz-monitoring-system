@@ -49,7 +49,7 @@ const adminNavMain = [
     icon: IconSchool,
   },
   {
-    title: "Kelola Kelas",
+    title: "Kelola Halaqah",
     url: "/admin/kelas",
     icon: IconUserPlus,
   },

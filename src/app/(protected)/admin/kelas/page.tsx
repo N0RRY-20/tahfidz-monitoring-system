@@ -1,61 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Pencil, Trash2 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-
-interface Kelas {
-  id: string;
-  name: string;
-  description: string | null;
-  santriCount: number;
-  createdAt: string;
-}
+import { Kelas } from "./partials/types";
+import { KelasDataTable } from "./partials/data-table";
+import { getColumns } from "./partials/columns";
+import { KelasTableSkeleton } from "./partials/table-skeleton";
+import { KelasFormDialog } from "./partials/kelas-dialogs";
+import { DeleteAlert } from "./partials/kelas-alerts";
 
 export default function KelolaKelasPage() {
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingKelas, setEditingKelas] = useState<Kelas | null>(null);
-
-  // Form state
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
+  const [deleteData, setDeleteData] = useState<Kelas | null>(null);
 
   const fetchKelas = async () => {
     try {
@@ -64,7 +28,7 @@ export default function KelolaKelasPage() {
       const data = await res.json();
       setKelasList(data);
     } catch {
-      toast.error("Gagal memuat data kelas");
+      toast.error("Gagal memuat data halaqah");
     } finally {
       setLoading(false);
     }
@@ -74,275 +38,177 @@ export default function KelolaKelasPage() {
     fetchKelas();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName) {
-      toast.error("Nama kelas wajib diisi");
-      return;
-    }
-
+  const handleCreate = async (data: { name: string; description: string }) => {
     setSubmitting(true);
     try {
       const res = await fetch("/api/admin/kelas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formName,
-          description: formDescription || null,
+          name: data.name,
+          description: data.description || null,
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal menambah kelas");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Gagal menambah halaqah");
       }
 
-      toast.success("Kelas berhasil ditambahkan");
-      setFormName("");
-      setFormDescription("");
-      setDialogOpen(false);
+      toast.success("Halaqah berhasil ditambahkan");
+      setCreateDialogOpen(false);
       fetchKelas();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal menambah kelas");
+      toast.error(
+        err instanceof Error ? err.message : "Gagal menambah halaqah"
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingKelas || !formName) {
-      toast.error("Nama kelas wajib diisi");
-      return;
-    }
-
+  const handleEdit = async (data: { name: string; description: string }) => {
+    if (!editingKelas) return;
     setSubmitting(true);
     try {
       const res = await fetch(`/api/admin/kelas/${editingKelas.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formName,
-          description: formDescription || null,
+          name: data.name,
+          description: data.description || null,
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal mengupdate kelas");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Gagal mengupdate halaqah");
       }
 
-      toast.success("Kelas berhasil diupdate");
-      setFormName("");
-      setFormDescription("");
+      toast.success("Halaqah berhasil diupdate");
       setEditDialogOpen(false);
       setEditingKelas(null);
       fetchKelas();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal mengupdate kelas");
+      toast.error(
+        err instanceof Error ? err.message : "Gagal mengupdate halaqah"
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteData) return;
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/kelas/${id}`, {
+      const res = await fetch(`/api/admin/kelas/${deleteData.id}`, {
         method: "DELETE",
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal menghapus kelas");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Gagal menghapus halaqah");
       }
 
-      toast.success("Kelas berhasil dihapus");
+      toast.success("Halaqah berhasil dihapus");
+      setDeleteData(null);
       fetchKelas();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal menghapus kelas");
+      toast.error(
+        err instanceof Error ? err.message : "Gagal menghapus halaqah"
+      );
+    } finally {
+      setDeleting(false);
     }
   };
 
-  const openEditDialog = (kelas: Kelas) => {
-    setEditingKelas(kelas);
-    setFormName(kelas.name);
-    setFormDescription(kelas.description || "");
-    setEditDialogOpen(true);
-  };
+  const columns = useMemo(
+    () =>
+      getColumns({
+        onEdit: (kelas) => {
+          setEditingKelas(kelas);
+          setEditDialogOpen(true);
+        },
+        onDelete: (kelas) => setDeleteData(kelas),
+      }),
+    []
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+              Kelola Halaqah
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Memuat data halaqah...
+            </p>
+          </div>
+        </div>
+        <KelasTableSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Kelola Kelas</h1>
-          <p className="text-slate-600">Manajemen data kelas</p>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+            Kelola Halaqah
+          </h1>
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            Manajemen data halaqah
+            <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold font-mono transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary hover:bg-primary/20">
+              Total: {kelasList.length} Halaqah
+            </span>
+          </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Kelas
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tambah Kelas Baru</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label>Nama Kelas *</Label>
-                <Input
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Contoh: 7A, 10B"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>Deskripsi</Label>
-                <Input
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Contoh: Kelas 7A SMP"
-                  className="mt-1"
-                />
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">
-                    Batal
-                  </Button>
-                </DialogClose>
-                <Button type="submit" disabled={submitting}>
-                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Simpan
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Kelas</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleEdit} className="space-y-4">
-            <div>
-              <Label>Nama Kelas *</Label>
-              <Input
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                placeholder="Contoh: 7A, 10B"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label>Deskripsi</Label>
-              <Input
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Contoh: Kelas 7A SMP"
-                className="mt-1"
-              />
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Batal
-                </Button>
-              </DialogClose>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Update
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <KelasDataTable
+        columns={columns}
+        data={kelasList}
+        onAddKelas={() => setCreateDialogOpen(true)}
+      />
 
-      <Card>
-        <CardContent className="pt-6">
-          {kelasList.length === 0 ? (
-            <p className="text-center text-slate-500 py-8">
-              Belum ada data kelas. Klik &quot;Tambah Kelas&quot; untuk menambahkan.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Kelas</TableHead>
-                  <TableHead>Deskripsi</TableHead>
-                  <TableHead>Jumlah Santri</TableHead>
-                  <TableHead>Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {kelasList.map((kelas) => (
-                  <TableRow key={kelas.id}>
-                    <TableCell className="font-medium">{kelas.name}</TableCell>
-                    <TableCell className="text-slate-500">
-                      {kelas.description || "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{kelas.santriCount} santri</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(kelas)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              disabled={kelas.santriCount > 0}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Hapus Kelas?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Kelas {kelas.name} akan dihapus permanen.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Batal</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(kelas.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Hapus
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* CREATE DIALOG */}
+      <KelasFormDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        title="Tambah Halaqah Baru"
+        onSubmit={handleCreate}
+        submitting={submitting}
+      />
+
+      {/* EDIT DIALOG */}
+      <KelasFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        title="Edit Halaqah"
+        initialData={
+          editingKelas
+            ? {
+                name: editingKelas.name,
+                description: editingKelas.description || "",
+              }
+            : undefined
+        }
+        onSubmit={handleEdit}
+        submitting={submitting}
+      />
+
+      {/* DELETE ALERT */}
+      <DeleteAlert
+        open={!!deleteData}
+        onOpenChange={(open) => !open && setDeleteData(null)}
+        data={deleteData}
+        onConfirm={handleDelete}
+        submitting={deleting}
+      />
     </div>
   );
 }
