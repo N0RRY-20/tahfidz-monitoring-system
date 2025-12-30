@@ -7,6 +7,7 @@ import { UserFilters } from "./partials/user-filters";
 import { UserTable } from "./partials/user-table";
 import { AssignRoleDialog } from "./partials/assign-role-dialog";
 import { RemoveRoleAlert } from "./partials/remove-role-alert";
+import { DeleteUserAlert } from "./partials/delete-user-alert";
 import type { User, Role } from "./partials/types";
 import { IconClock } from "@tabler/icons-react";
 
@@ -32,6 +33,10 @@ export default function KelolaUserPage() {
     roleName: string;
     userName: string;
   } | null>(null);
+
+  // Delete user dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const fetchData = async () => {
     try {
@@ -130,6 +135,31 @@ export default function KelolaUserPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal menghapus user");
+      }
+
+      toast.success("User berhasil dihapus");
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus user");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchSearch =
       user.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -210,6 +240,10 @@ export default function KelolaUserPage() {
           });
           setRemoveDialogOpen(true);
         }}
+        onDeleteUser={(user) => {
+          setUserToDelete(user);
+          setDeleteDialogOpen(true);
+        }}
       />
 
       <AssignRoleDialog
@@ -228,6 +262,14 @@ export default function KelolaUserPage() {
         onOpenChange={setRemoveDialogOpen}
         data={roleToRemove}
         onConfirm={handleRemoveRole}
+        submitting={submitting}
+      />
+
+      <DeleteUserAlert
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        userName={userToDelete?.name || null}
+        onConfirm={handleDeleteUser}
         submitting={submitting}
       />
     </div>

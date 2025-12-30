@@ -36,7 +36,12 @@ import {
   Check,
 } from "lucide-react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
-import { SparklesCore } from "@/components/ui/sparkles";
+import dynamic from "next/dynamic";
+
+const SparklesCore = dynamic(
+  () => import("@/components/ui/sparkles").then((mod) => mod.SparklesCore),
+  { ssr: false }
+);
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -284,7 +289,7 @@ export default function Home() {
                     background="transparent"
                     minSize={0.4}
                     maxSize={1.5}
-                    particleDensity={100}
+                    particleDensity={40}
                     className="w-full h-full"
                     particleColor="#10b981" // Emerald-500
                   />
@@ -677,6 +682,9 @@ function FeatureCard({
           src={image}
           alt={title}
           fill
+          loading="lazy"
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAgEDBAMBAAAAAAAAAAAAAQIDAAQRBQYSIRMxQVH/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAAIDAQAAAAAAAAAAAAAAAAECAAMRIf/aAAwDAQACEQMRAD8Aw+G9ubWJo4LmaNGOSqOQCfvVS0126s7RLdLq4CINoHkP9pSuS1g1ODCgBepz/9k="
           className="object-cover transition-transform duration-500 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, 33vw"
         />

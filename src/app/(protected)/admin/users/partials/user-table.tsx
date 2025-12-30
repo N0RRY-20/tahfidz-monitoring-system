@@ -29,12 +29,14 @@ interface UserTableProps {
   users: User[];
   onAssignRole: (user: User) => void;
   onRemoveRole: (user: User, roleId: string, roleName: string) => void;
+  onDeleteUser: (user: User) => void;
 }
 
 export function UserTable({
   users,
   onAssignRole,
   onRemoveRole,
+  onDeleteUser,
 }: UserTableProps) {
   return (
     <div className="rounded-lg border overflow-hidden">
@@ -139,6 +141,14 @@ export function UserTable({
                             ))}
                           </>
                         )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => onDeleteUser(user)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <IconTrash className="mr-2 size-4" />
+                          Hapus User
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
