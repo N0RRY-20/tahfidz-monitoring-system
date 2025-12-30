@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
   Accordion,
@@ -30,6 +32,8 @@ import {
   Youtube,
   User,
   Lock,
+  Copy,
+  Check,
 } from "lucide-react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { SparklesCore } from "@/components/ui/sparkles";
@@ -230,25 +234,26 @@ export default function Home() {
                       </DialogHeader>
                       <div className="flex flex-col space-y-4 py-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Email
-                          </label>
-                          <div className="flex items-center space-x-2 rounded-md border p-3 bg-muted/50">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <span className="flex-1 font-mono text-sm">
-                              admin@example.com
-                            </span>
+                          <Label>Email</Label>
+                          <div className="relative">
+                            <Input
+                              readOnly
+                              value="admin@example.com"
+                              className="pr-10 bg-muted/50 font-mono"
+                            />
+                            <CopyButton value="admin@example.com" />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Password
-                          </label>
-                          <div className="flex items-center space-x-2 rounded-md border p-3 bg-muted/50">
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                            <span className="flex-1 font-mono text-sm">
-                              password
-                            </span>
+                          <Label>Password</Label>
+                          <div className="relative">
+                            <Input
+                              readOnly
+                              value="password"
+                              type="text"
+                              className="pr-10 bg-muted/50 font-mono"
+                            />
+                            <CopyButton value="password" />
                           </div>
                         </div>
                       </div>
@@ -619,6 +624,40 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function CopyButton({ value }: { value: string }) {
+  const [hasCopied, setHasCopied] = useState(false);
+
+  useEffect(() => {
+    if (hasCopied) {
+      const timeout = setTimeout(() => {
+        setHasCopied(false);
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasCopied]);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(value);
+    setHasCopied(true);
+  };
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="absolute right-0 top-0 h-full w-10 text-muted-foreground hover:text-foreground"
+      onClick={copyToClipboard}
+    >
+      {hasCopied ? (
+        <Check className="h-4 w-4 text-emerald-600" />
+      ) : (
+        <Copy className="h-4 w-4" />
+      )}
+      <span className="sr-only">Copy</span>
+    </Button>
   );
 }
 
