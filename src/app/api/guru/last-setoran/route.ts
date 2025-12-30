@@ -7,7 +7,14 @@ import {
   santriProfiles,
   quranMeta,
 } from "@/db/schema/tahfidz-schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
+
+interface LastSetoranRecord {
+  santriId: string;
+  date: string;
+  surahName: string;
+  colorStatus: "G" | "Y" | "R";
+}
 
 export async function GET() {
   try {
@@ -19,13 +26,15 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get last setoran for each santri assigned to this guru
-    const lastSetoranData = await db
+    // Get all setoran for santris assigned to this guru
+    const allSetoran = await db
       .select({
         santriId: dailyRecords.santriId,
         date: dailyRecords.date,
+        type: dailyRecords.type,
         surahName: quranMeta.surahName,
         colorStatus: dailyRecords.colorStatus,
+        createdAt: dailyRecords.createdAt,
       })
       .from(dailyRecords)
       .innerJoin(quranMeta, eq(dailyRecords.surahId, quranMeta.id))
@@ -33,15 +42,57 @@ export async function GET() {
       .where(eq(santriProfiles.assignedGuruId, session.user.id))
       .orderBy(desc(dailyRecords.createdAt));
 
-    // Get only the latest record for each santri
-    const latestByStudent: Record<string, (typeof lastSetoranData)[0]> = {};
-    for (const record of lastSetoranData) {
-      if (!latestByStudent[record.santriId]) {
-        latestByStudent[record.santriId] = record;
+    // Separate into lastZiyadah and lastMurajaah per santri
+    const result: {
+      santriId: string;
+      lastZiyadah: LastSetoranRecord | null;
+      lastMurajaah: LastSetoranRecord | null;
+    }[] = [];
+
+    const santriMap = new Map<
+      string,
+      {
+        lastZiyadah: LastSetoranRecord | null;
+        lastMurajaah: LastSetoranRecord | null;
+      }
+    >();
+
+    for (const record of allSetoran) {
+      if (!santriMap.has(record.santriId)) {
+        santriMap.set(record.santriId, {
+          lastZiyadah: null,
+          lastMurajaah: null,
+        });
+      }
+
+      const data = santriMap.get(record.santriId)!;
+
+      if (record.type === "ziyadah" && !data.lastZiyadah) {
+        data.lastZiyadah = {
+          santriId: record.santriId,
+          date: record.date,
+          surahName: record.surahName,
+          colorStatus: record.colorStatus,
+        };
+      } else if (record.type === "murajaah" && !data.lastMurajaah) {
+        data.lastMurajaah = {
+          santriId: record.santriId,
+          date: record.date,
+          surahName: record.surahName,
+          colorStatus: record.colorStatus,
+        };
       }
     }
 
-    return NextResponse.json(Object.values(latestByStudent));
+    santriMap.forEach((value, santriId) => {
+      result.push({
+        santriId,
+        lastZiyadah: value.lastZiyadah,
+        lastMurajaah: value.lastMurajaah,
+      });
+    });
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching last setoran:", error);
     return NextResponse.json(

@@ -1,12 +1,23 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { santriProfiles, dailyRecords, classes } from "@/db/schema/tahfidz-schema";
-import { eq, sql, and, gte } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { Users, BookOpen, TrendingUp, Calendar } from "lucide-react";
+import {
+  santriProfiles,
+  dailyRecords,
+  classes,
+  quranMeta,
+} from "@/db/schema/tahfidz-schema";
+import { eq, sql, and, gte, desc } from "drizzle-orm";
+import { StatsCards } from "./partials/stats-cards";
+import { SantriList } from "./partials/santri-list";
+
+interface LastSetoranInfo {
+  santriId: string;
+  type: string;
+  surahName: string;
+  colorStatus: "G" | "Y" | "R";
+  date: string;
+}
 
 export default async function GuruDashboard() {
   const session = await auth.api.getSession({
@@ -22,24 +33,68 @@ export default async function GuruDashboard() {
     .select({
       id: santriProfiles.id,
       fullName: santriProfiles.fullName,
-      classId: santriProfiles.classId,
       className: classes.name,
     })
     .from(santriProfiles)
     .leftJoin(classes, eq(santriProfiles.classId, classes.id))
     .where(eq(santriProfiles.assignedGuruId, session.user.id));
 
+  // Get last setoran for all santri (both ziyadah and murajaah)
+  const lastSetoranData = await db
+    .select({
+      santriId: dailyRecords.santriId,
+      type: dailyRecords.type,
+      surahName: quranMeta.surahName,
+      colorStatus: dailyRecords.colorStatus,
+      date: dailyRecords.date,
+    })
+    .from(dailyRecords)
+    .innerJoin(quranMeta, eq(dailyRecords.surahId, quranMeta.id))
+    .innerJoin(santriProfiles, eq(dailyRecords.santriId, santriProfiles.id))
+    .where(eq(santriProfiles.assignedGuruId, session.user.id))
+    .orderBy(desc(dailyRecords.createdAt));
+
+  // Build map of last ziyadah and murajaah per santri
+  const lastSetoranMap: Record<
+    string,
+    { ziyadah: LastSetoranInfo | null; murajaah: LastSetoranInfo | null }
+  > = {};
+
+  for (const record of lastSetoranData) {
+    if (!lastSetoranMap[record.santriId]) {
+      lastSetoranMap[record.santriId] = { ziyadah: null, murajaah: null };
+    }
+    const data = lastSetoranMap[record.santriId];
+    if (record.type === "ziyadah" && !data.ziyadah) {
+      data.ziyadah = record as LastSetoranInfo;
+    } else if (record.type === "murajaah" && !data.murajaah) {
+      data.murajaah = record as LastSetoranInfo;
+    }
+  }
+
   // Get today's date for filtering
   const today = new Date().toISOString().split("T")[0];
 
-  // Get today's records count
-  const todayRecords = await db
-    .select({ count: sql<number>`count(*)` })
+  // Get today's records count (separate ziyadah and murajaah)
+  const todayZiyadah = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
     .from(dailyRecords)
     .where(
       and(
         eq(dailyRecords.guruId, session.user.id),
-        eq(dailyRecords.date, today)
+        eq(dailyRecords.date, today),
+        eq(dailyRecords.type, "ziyadah")
+      )
+    );
+
+  const todayMurajaah = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(dailyRecords)
+    .where(
+      and(
+        eq(dailyRecords.guruId, session.user.id),
+        eq(dailyRecords.date, today),
+        eq(dailyRecords.type, "murajaah")
       )
     );
 
@@ -49,7 +104,7 @@ export default async function GuruDashboard() {
   const monthStart = startOfMonth.toISOString().split("T")[0];
 
   const monthRecords = await db
-    .select({ count: sql<number>`count(*)` })
+    .select({ count: sql<number>`cast(count(*) as integer)` })
     .from(dailyRecords)
     .where(
       and(
@@ -58,106 +113,50 @@ export default async function GuruDashboard() {
       )
     );
 
+  // Prepare santri list data with last setoran
+  const santriListData = santriBinaan.map((santri) => {
+    const setoranInfo = lastSetoranMap[santri.id];
+    return {
+      id: santri.id,
+      fullName: santri.fullName,
+      className: santri.className,
+      lastZiyadah: setoranInfo?.ziyadah
+        ? {
+            surahName: setoranInfo.ziyadah.surahName,
+            colorStatus: setoranInfo.ziyadah.colorStatus,
+          }
+        : null,
+      lastMurajaah: setoranInfo?.murajaah
+        ? {
+            surahName: setoranInfo.murajaah.surahName,
+            colorStatus: setoranInfo.murajaah.colorStatus,
+          }
+        : null,
+    };
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
           Assalamu&apos;alaikum, {session.user.name}
         </h1>
-        <p className="text-slate-600">Selamat datang di Panel Guru Tahfidz</p>
+        <p className="text-muted-foreground">
+          Selamat datang di Panel Guru Tahfidz
+        </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Santri Binaan</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{santriBinaan.length}</div>
-            <p className="text-xs text-muted-foreground">Total santri</p>
-          </CardContent>
-        </Card>
+      <StatsCards
+        santriCount={santriBinaan.length}
+        todayZiyadah={Number(todayZiyadah[0]?.count || 0)}
+        todayMurajaah={Number(todayMurajaah[0]?.count || 0)}
+        monthTotal={Number(monthRecords[0]?.count || 0)}
+      />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Setoran Hari Ini</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todayRecords[0]?.count || 0}</div>
-            <p className="text-xs text-muted-foreground">Input hari ini</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bulan Ini</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{monthRecords[0]?.count || 0}</div>
-            <p className="text-xs text-muted-foreground">Total setoran</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quick Action</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Link
-              href="/guru/input"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white h-9 px-4 hover:bg-emerald-700 transition-colors"
-            >
-              Input Setoran
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Daftar Santri Binaan */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Daftar Santri Binaan</h2>
-        {santriBinaan.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-slate-500">
-              Belum ada santri yang ditugaskan kepada Anda.
-              <br />
-              Hubungi Admin untuk mapping santri.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {santriBinaan.map((santri) => (
-              <Card key={santri.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg">{santri.fullName}</h3>
-                      <p className="text-sm text-slate-500">
-                        Kelas: {santri.className || "-"}
-                      </p>
-                    </div>
-                    <Badge variant="outline">{santri.className || "-"}</Badge>
-                  </div>
-                  <div className="mt-4">
-                    <Link
-                      href={`/guru/input?santriId=${santri.id}`}
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                    >
-                      Input Setoran →
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Santri List */}
+      <SantriList santriList={santriListData} />
     </div>
   );
 }

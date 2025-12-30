@@ -3,21 +3,74 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconBook, IconRotate } from "@tabler/icons-react";
+
+interface SetoranRecord {
+  date: string;
+  surahName: string;
+  colorStatus: "G" | "Y" | "R";
+}
 
 export interface SantriData {
   id: string;
   fullName: string;
   className: string | null;
-  lastSetoran?: {
-    date: string;
-    surahName: string;
-    colorStatus: "G" | "Y" | "R";
-  } | null;
+  lastZiyadah?: SetoranRecord | null;
+  lastMurajaah?: SetoranRecord | null;
 }
 
 interface ColumnsProps {
   onSelectSantri: (santriId: string) => void;
+}
+
+function getStatusBadge(colorStatus: "G" | "Y" | "R") {
+  const configs = {
+    G: {
+      color:
+        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+      text: "Mutqin",
+    },
+    Y: {
+      color:
+        "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+      text: "Jayyid",
+    },
+    R: {
+      color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+      text: "Rasib",
+    },
+  };
+  const config = configs[colorStatus];
+  return <Badge className={config.color}>{config.text}</Badge>;
+}
+
+function SetoranCell({
+  record,
+  type,
+}: {
+  record: SetoranRecord | null | undefined;
+  type: "ziyadah" | "murajaah";
+}) {
+  if (!record) {
+    return <span className="text-muted-foreground text-xs">Belum ada</span>;
+  }
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-center gap-1.5">
+        {type === "ziyadah" ? (
+          <IconBook className="h-3 w-3 text-blue-500" />
+        ) : (
+          <IconRotate className="h-3 w-3 text-orange-500" />
+        )}
+        <span className="text-sm font-medium">{record.surahName}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">{record.date}</span>
+        {getStatusBadge(record.colorStatus)}
+      </div>
+    </div>
+  );
 }
 
 export function getColumns({
@@ -33,7 +86,7 @@ export function getColumns({
     },
     {
       accessorKey: "className",
-      header: "Halaqah",
+      header: "Kelas",
       cell: ({ row }) => (
         <Badge variant="outline" className="text-muted-foreground">
           {row.getValue("className") || "-"}
@@ -41,45 +94,28 @@ export function getColumns({
       ),
     },
     {
-      accessorKey: "lastSetoran",
-      header: "Setoran Terakhir",
-      cell: ({ row }) => {
-        const lastSetoran = row.original.lastSetoran;
-        if (!lastSetoran) {
-          return (
-            <span className="text-muted-foreground text-sm">Belum ada</span>
-          );
-        }
-
-        let statusColor = "bg-slate-100 text-slate-600";
-        let statusText = "-";
-
-        if (lastSetoran.colorStatus === "G") {
-          statusColor =
-            "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
-          statusText = "Mutqin";
-        } else if (lastSetoran.colorStatus === "Y") {
-          statusColor =
-            "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
-          statusText = "Jayyid";
-        } else if (lastSetoran.colorStatus === "R") {
-          statusColor =
-            "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-          statusText = "Rasib";
-        }
-
-        return (
-          <div className="flex flex-col gap-1">
-            <span className="text-sm">{lastSetoran.surahName}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {lastSetoran.date}
-              </span>
-              <Badge className={statusColor}>{statusText}</Badge>
-            </div>
-          </div>
-        );
-      },
+      accessorKey: "lastZiyadah",
+      header: () => (
+        <div className="flex items-center gap-1">
+          <IconBook className="h-4 w-4 text-blue-500" />
+          Ziyadah Terakhir
+        </div>
+      ),
+      cell: ({ row }) => (
+        <SetoranCell record={row.original.lastZiyadah} type="ziyadah" />
+      ),
+    },
+    {
+      accessorKey: "lastMurajaah",
+      header: () => (
+        <div className="flex items-center gap-1">
+          <IconRotate className="h-4 w-4 text-orange-500" />
+          Murajaah Terakhir
+        </div>
+      ),
+      cell: ({ row }) => (
+        <SetoranCell record={row.original.lastMurajaah} type="murajaah" />
+      ),
     },
     {
       id: "actions",

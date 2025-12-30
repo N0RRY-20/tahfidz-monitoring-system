@@ -27,9 +27,16 @@ interface Tag {
 
 interface LastSetoran {
   santriId: string;
-  date: string;
-  surahName: string;
-  colorStatus: "G" | "Y" | "R";
+  lastZiyadah: {
+    date: string;
+    surahName: string;
+    colorStatus: "G" | "Y" | "R";
+  } | null;
+  lastMurajaah: {
+    date: string;
+    surahName: string;
+    colorStatus: "G" | "Y" | "R";
+  } | null;
 }
 
 export default function InputSetoranPage() {
@@ -98,12 +105,16 @@ export default function InputSetoranPage() {
 
   // Transform santri data for table
   const tableData: SantriData[] = useMemo(() => {
-    return santriList.map((santri) => ({
-      id: santri.id,
-      fullName: santri.fullName,
-      className: santri.className,
-      lastSetoran: lastSetoranMap[santri.id] || null,
-    }));
+    return santriList.map((santri) => {
+      const setoranData = lastSetoranMap[santri.id];
+      return {
+        id: santri.id,
+        fullName: santri.fullName,
+        className: santri.className,
+        lastZiyadah: setoranData?.lastZiyadah || null,
+        lastMurajaah: setoranData?.lastMurajaah || null,
+      };
+    });
   }, [santriList, lastSetoranMap]);
 
   // Handle santri selection
