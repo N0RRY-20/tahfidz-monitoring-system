@@ -23,6 +23,9 @@ export function InstallPrompt() {
     ).matches;
     setIsStandalone(isInStandalone);
 
+    // Don't show if already installed
+    if (isInStandalone) return;
+
     // Check if iOS
     const isIOSDevice =
       /iPad|iPhone|iPod/.test(navigator.userAgent) &&
@@ -40,24 +43,22 @@ export function InstallPrompt() {
       }
     }
 
-    // Show prompt if not installed
-    if (!isInStandalone) {
-      // Delay showing to not be intrusive on first load
-      const timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-
-    // Listen for beforeinstallprompt event (Android/Chrome)
+    // Listen for beforeinstallprompt event (Android/Chrome/Edge)
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+
+    // Delay showing banner to not be intrusive on first load
+    const timer = setTimeout(() => {
+      setShowPrompt(true);
+    }, 3000);
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      clearTimeout(timer);
     };
   }, []);
 
