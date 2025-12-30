@@ -166,9 +166,12 @@ export default async function ProfilPage() {
             <ProgressChart data={chartData} />
           ) : (
             <div className="text-center py-12">
-              <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                Belum ada data untuk ditampilkan
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-purple-500" />
+              </div>
+              <p className="font-medium text-foreground mb-1">Grafik masih kosong</p>
+              <p className="text-sm text-muted-foreground">
+                Mulai setoran untuk melihat progress hafalanmu 📈
               </p>
             </div>
           )}

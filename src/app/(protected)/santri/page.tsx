@@ -285,8 +285,14 @@ export default async function SantriDashboard() {
         </CardHeader>
         <CardContent>
           {records.length === 0 ? (
-            <div className="py-6 text-center text-muted-foreground">
-              Belum ada riwayat setoran.
+            <div className="py-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900/30 dark:to-emerald-800/30 flex items-center justify-center">
+                <BookOpen className="h-8 w-8 text-emerald-500" />
+              </div>
+              <p className="font-medium text-foreground mb-1">Belum ada setoran</p>
+              <p className="text-sm text-muted-foreground">
+                Setoran pertamamu akan muncul di sini ✨
+              </p>
             </div>
           ) : (
             <div className="space-y-2">

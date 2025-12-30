@@ -96,9 +96,10 @@ export function StatsCards({
         </CardHeader>
         <CardContent>
           <Link href="/guru/input">
-            <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Input Setoran
+            <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm">
+              <BookOpen className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Input Setoran</span>
+              <span className="sm:hidden">Input</span>
             </Button>
           </Link>
         </CardContent>

@@ -30,9 +30,8 @@ export default async function SantriLayout({
 
   // Check if user is santri or admin
   const isSantri = userRoles.some((r) => r.roleName === "santri");
-  const isAdmin = userRoles.some((r) => r.roleName === "admin");
 
-  if (!isSantri && !isAdmin) {
+  if (!isSantri) {
     redirect("/dashboard");
   }
 

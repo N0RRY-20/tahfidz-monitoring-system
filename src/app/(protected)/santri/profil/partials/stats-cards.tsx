@@ -104,25 +104,19 @@ export function StatsCards({
               />
             )}
           </div>
-          {/* Legend */}
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-muted-foreground">
-                Mutqin ({greenRecords})
-              </span>
+          {/* Legend - vertical di mobile, horizontal di desktop */}
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 shrink-0 rounded-full bg-green-500" />
+              <span className="text-muted-foreground">Mutqin ({greenRecords})</span>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-muted-foreground">
-                Jayyid ({yellowRecords})
-              </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 shrink-0 rounded-full bg-yellow-500" />
+              <span className="text-muted-foreground">Jayyid ({yellowRecords})</span>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-muted-foreground">
-                Rasib ({redRecords})
-              </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 shrink-0 rounded-full bg-red-500" />
+              <span className="text-muted-foreground">Rasib ({redRecords})</span>
             </div>
           </div>
         </CardContent>

@@ -80,8 +80,8 @@ export function RiwayatTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border">
-        <Table>
+      <div className="rounded-lg border overflow-x-auto">
+        <Table className="min-w-[500px]">
           <TableHeader className="bg-muted/50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -130,11 +130,11 @@ export function RiwayatTable<TData, TValue>({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="text-sm text-muted-foreground order-2 sm:order-1">
           Menampilkan {table.getFilteredRowModel().rows.length} data
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 order-1 sm:order-2">
           <Button
             variant="outline"
             size="sm"
@@ -142,11 +142,10 @@ export function RiwayatTable<TData, TValue>({
             disabled={!table.getCanPreviousPage()}
           >
             <IconChevronLeft className="h-4 w-4" />
-            Previous
+            <span className="hidden sm:inline">Previous</span>
           </Button>
-          <div className="text-sm">
-            Hal {table.getState().pagination.pageIndex + 1} dari{" "}
-            {table.getPageCount() || 1}
+          <div className="text-sm whitespace-nowrap">
+            {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
           </div>
           <Button
             variant="outline"
@@ -154,7 +153,7 @@ export function RiwayatTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
             <IconChevronRight className="h-4 w-4" />
           </Button>
         </div>
