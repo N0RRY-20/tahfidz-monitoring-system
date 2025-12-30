@@ -1,11 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { dailyRecords, santriProfiles, quranMeta, recordTags, masterTags, classes } from "@/db/schema/tahfidz-schema";
+import {
+  dailyRecords,
+  santriProfiles,
+  quranMeta,
+  recordTags,
+  masterTags,
+  classes,
+} from "@/db/schema/tahfidz-schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -15,10 +22,30 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get records from last 7 days
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const dateLimit = sevenDaysAgo.toISOString().split("T")[0];
+    // Get filter from query params
+    const { searchParams } = new URL(request.url);
+    const filter = searchParams.get("filter") || "7days";
+
+    // Calculate date limit based on filter
+    const now = new Date();
+    let dateLimit: string;
+
+    switch (filter) {
+      case "today":
+        dateLimit = now.toISOString().split("T")[0];
+        break;
+      case "30days":
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        dateLimit = thirtyDaysAgo.toISOString().split("T")[0];
+        break;
+      case "7days":
+      default:
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        dateLimit = sevenDaysAgo.toISOString().split("T")[0];
+        break;
+    }
 
     const records = await db
       .select({
@@ -71,10 +98,11 @@ export async function GET() {
     }, {} as Record<string, string[]>);
 
     // Check if record can be edited (within 24 hours)
-    const now = new Date();
+    const currentTime = new Date();
     const result = records.map((record) => {
       const createdAt = new Date(record.createdAt);
-      const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+      const hoursDiff =
+        (currentTime.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
       const canEdit = hoursDiff <= 24;
 
       return {

@@ -1,74 +1,58 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Pencil, Trash2, AlertCircle, Clock } from "lucide-react";
+import {
+  Loader2,
+  Clock,
+  Filter,
+  AlertCircle,
+  BookOpen,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
-import { id as localeId } from "date-fns/locale";
-
-interface Record {
-  id: string;
-  santriName: string;
-  santriClass: string;
-  surahName: string;
-  ayatStart: number;
-  ayatEnd: number;
-  colorStatus: "G" | "Y" | "R";
-  type: "ziyadah" | "murajaah";
-  notes: string | null;
-  tags: string[];
-  date: string;
-  createdAt: string;
-  canEdit: boolean;
-}
-
-function getColorBadge(status: "G" | "Y" | "R") {
-  switch (status) {
-    case "G":
-      return <Badge className="bg-green-500">Hijau - Mutqin</Badge>;
-    case "Y":
-      return <Badge className="bg-yellow-500">Kuning - Jayyid</Badge>;
-    case "R":
-      return <Badge className="bg-red-500">Merah - Rasib</Badge>;
-  }
-}
+import { getColumns, type RiwayatData } from "./partials/columns";
+import { RiwayatTable } from "./partials/riwayat-table";
+import { EditDialog } from "./partials/edit-dialog";
+import { DeleteDialog } from "./partials/delete-dialog";
+import { RiwayatSkeleton } from "./partials/skeleton";
 
 export default function RiwayatPage() {
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<RiwayatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [dateFilter, setDateFilter] = useState<"today" | "7days" | "30days">(
+    "7days"
+  );
+
+  // Edit state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<RiwayatData | null>(null);
+
+  // Delete state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingRecord, setDeletingRecord] = useState<RiwayatData | null>(
+    null
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchRecords = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("/api/guru/riwayat");
+      const res = await fetch(`/api/guru/riwayat?filter=${dateFilter}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setRecords(data);
+      setError(null);
     } catch {
       setError("Gagal memuat riwayat. Silakan refresh halaman.");
     } finally {
@@ -78,12 +62,26 @@ export default function RiwayatPage() {
 
   useEffect(() => {
     fetchRecords();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFilter]);
 
-  const handleDelete = async (recordId: string) => {
-    setDeleting(recordId);
+  // Handlers
+  const handleEdit = (record: RiwayatData) => {
+    setEditingRecord(record);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (record: RiwayatData) => {
+    setDeletingRecord(record);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingRecord) return;
+
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/guru/delete-setoran/${recordId}`, {
+      const res = await fetch(`/api/guru/delete-setoran/${deletingRecord.id}`, {
         method: "DELETE",
       });
 
@@ -93,30 +91,34 @@ export default function RiwayatPage() {
       }
 
       toast.success("Data berhasil dihapus");
+      setDeleteDialogOpen(false);
+      setDeletingRecord(null);
       fetchRecords();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Gagal menghapus data"
-      );
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus data");
     } finally {
-      setDeleting(null);
+      setIsDeleting(false);
     }
   };
 
+  // Get columns with callbacks
+  const columns = useMemo(
+    () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+    []
+  );
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-      </div>
-    );
+    return <RiwayatSkeleton />;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Riwayat Input</h1>
-        <p className="text-slate-600">
-          Data setoran yang sudah Anda input hari ini
+        <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+          Riwayat Input
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          Data setoran yang sudah Anda input
         </p>
       </div>
 
@@ -135,138 +137,84 @@ export default function RiwayatPage() {
         </AlertDescription>
       </Alert>
 
-      {records.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-slate-500">
-            Belum ada riwayat input hari ini.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {records.map((record) => (
-            <Card
-              key={record.id}
-              className={!record.canEdit ? "opacity-75" : ""}
-            >
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-lg">
-                        {record.santriName}
-                      </h3>
-                      <Badge variant="outline">{record.santriClass}</Badge>
-                      <Badge variant="secondary">
-                        {record.type === "ziyadah" ? "Ziyadah" : "Murajaah"}
-                      </Badge>
-                    </div>
+      {/* Filter */}
+      <div className="flex items-center gap-3">
+        <Filter className="h-4 w-4 text-slate-500" />
+        <Select
+          value={dateFilter}
+          onValueChange={(v) => setDateFilter(v as typeof dateFilter)}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filter Tanggal" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="today">Hari Ini</SelectItem>
+            <SelectItem value="7days">7 Hari Terakhir</SelectItem>
+            <SelectItem value="30days">30 Hari Terakhir</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-muted-foreground">
+          {records.length} data ditemukan
+        </span>
+      </div>
 
-                    <p className="text-slate-600">
-                      <span className="font-medium">{record.surahName}</span>,
-                      Ayat {record.ayatStart} - {record.ayatEnd}
-                    </p>
+      <Tabs defaultValue="ziyadah" className="space-y-4">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="ziyadah" className="gap-2">
+            <BookOpen className="h-4 w-4" />
+            Ziyadah ({records.filter((r) => r.type === "ziyadah").length})
+          </TabsTrigger>
+          <TabsTrigger value="murajaah" className="gap-2">
+            <RotateCcw className="h-4 w-4" />
+            Murajaah ({records.filter((r) => r.type === "murajaah").length})
+          </TabsTrigger>
+        </TabsList>
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {getColorBadge(record.colorStatus)}
-                      {record.tags.map((tag, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+        <TabsContent value="ziyadah">
+          <Card>
+            <CardHeader>
+              <CardTitle>Setoran Ziyadah (Hafalan Baru)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RiwayatTable
+                columns={columns}
+                data={records.filter((r) => r.type === "ziyadah")}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                    {record.notes && (
-                      <p className="text-sm text-slate-500 italic">
-                        &quot;{record.notes}&quot;
-                      </p>
-                    )}
+        <TabsContent value="murajaah">
+          <Card>
+            <CardHeader>
+              <CardTitle>Setoran Murajaah (Pengulangan)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RiwayatTable
+                columns={columns}
+                data={records.filter((r) => r.type === "murajaah")}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
-                    <p className="text-xs text-slate-400">
-                      {formatDistanceToNow(new Date(record.createdAt), {
-                        addSuffix: true,
-                        locale: localeId,
-                      })}
-                    </p>
-                  </div>
+      {/* Edit Dialog */}
+      <EditDialog
+        record={editingRecord}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={fetchRecords}
+      />
 
-                  <div className="flex gap-2">
-                    {record.canEdit ? (
-                      <>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Pencil className="h-4 w-4 mr-1" />
-                              Edit
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Edit Setoran</DialogTitle>
-                            </DialogHeader>
-                            <p className="text-sm text-slate-600">
-                              Fitur edit akan segera tersedia. Untuk sementara,
-                              Anda dapat menghapus data ini dan input ulang.
-                            </p>
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button variant="outline">Tutup</Button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              disabled={deleting === record.id}
-                            >
-                              {deleting === record.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <>
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Hapus
-                                </>
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Hapus Data Setoran?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Data setoran {record.santriName} pada surat{" "}
-                                {record.surahName} akan dihapus permanen.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Batal</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(record.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Ya, Hapus
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </>
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Tidak bisa diedit ({">"}24 jam)
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Delete Dialog */}
+      <DeleteDialog
+        record={deletingRecord}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }
