@@ -93,10 +93,10 @@ export function SantriFormDialog({
             />
           </div>
           <div>
-            <Label>Halaqah</Label>
+            <Label>Kelas</Label>
             <Select value={classId} onValueChange={setClassId}>
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Pilih halaqah (opsional)" />
+                <SelectValue placeholder="Pilih kelas (opsional)" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Tidak ada</SelectItem>

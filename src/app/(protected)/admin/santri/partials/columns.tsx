@@ -78,7 +78,7 @@ export const getColumns = ({
   },
   {
     accessorKey: "className",
-    header: "Halaqah",
+    header: "Kelas",
     cell: ({ row }) => {
       const className = row.getValue("className") as string;
       return className ? (

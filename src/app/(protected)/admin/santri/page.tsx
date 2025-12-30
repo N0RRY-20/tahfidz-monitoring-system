@@ -421,7 +421,7 @@ export default function KelolaSantriPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground flex items-center gap-2">
                     <School className="size-4" />
-                    Halaqah
+                    Kelas
                   </span>
                   <Badge variant="secondary">
                     {viewingSantri.className || "-"}

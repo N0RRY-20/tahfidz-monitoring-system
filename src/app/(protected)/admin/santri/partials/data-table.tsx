@@ -105,10 +105,10 @@ export function SantriDataTable<TData, TValue>({
           <div className="w-full sm:w-[200px]">
             <Select value={filterClassId} onValueChange={setFilterClassId}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter Halaqah" />
+                <SelectValue placeholder="Filter Kelas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Halaqah</SelectItem>
+                <SelectItem value="all">Semua kelas</SelectItem>
                 {kelasList.map((kelas) => (
                   <SelectItem key={kelas.id} value={kelas.id}>
                     {kelas.name}
