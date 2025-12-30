@@ -35,7 +35,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: "Dashboard", href: "/santri", icon: LayoutDashboard },
-  { name: "Logbook", href: "/santri/logbook", icon: BookOpen },
+  { name: "Riwayat Hafalan", href: "/santri/logbook", icon: BookOpen },
   { name: "Profil", href: "/santri/profil", icon: User },
 ];
 

@@ -4,7 +4,9 @@ import { db } from "@/db";
 import { santriProfiles, dailyRecords, quranMeta, recordTags, masterTags } from "@/db/schema/tahfidz-schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogbookHeader, SurahList, RecordCard } from "./partials";
+import { SurahList, RecordCard } from "./partials";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default async function LogbookPage({
   searchParams,
@@ -112,7 +114,22 @@ export default async function LogbookPage({
 
   return (
     <div className="space-y-6">
-      <LogbookHeader title="Logbook Hafalan" subtitle={subtitle} />
+      {/* Page Title with Back Button (only when filtered) */}
+      {(juzFilter || surahFilter) && (
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/santri/logbook" 
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-lg md:text-xl font-bold text-foreground">
+              {subtitle}
+            </h1>
+          </div>
+        </div>
+      )}
 
       {/* Surah list in this Juz */}
       {juzFilter && (
@@ -126,13 +143,13 @@ export default async function LogbookPage({
       {/* Records List */}
       <div>
         <h2 className="text-base md:text-lg font-semibold mb-3">
-          Riwayat Setoran
+          {juzFilter || surahFilter ? "Riwayat Setoran" : "Semua Riwayat Setoran"}
         </h2>
         
         {filteredRecords.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              Belum ada riwayat setoran untuk filter ini.
+              Belum ada riwayat setoran{juzFilter || surahFilter ? " untuk filter ini" : ""}.
             </CardContent>
           </Card>
         ) : (
