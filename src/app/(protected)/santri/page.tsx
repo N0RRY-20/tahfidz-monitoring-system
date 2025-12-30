@@ -1,7 +1,12 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { santriProfiles, dailyRecords, quranMeta, classes } from "@/db/schema/tahfidz-schema";
+import {
+  santriProfiles,
+  dailyRecords,
+  quranMeta,
+  classes,
+} from "@/db/schema/tahfidz-schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -63,12 +68,12 @@ export default async function SantriDashboard() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-foreground">
             Assalamu&apos;alaikum, {session.user.name}
           </h1>
         </div>
         <Card>
-          <CardContent className="py-8 text-center text-slate-500">
+          <CardContent className="py-8 text-center text-muted-foreground">
             Profil santri belum dibuat. Hubungi Admin.
           </CardContent>
         </Card>
@@ -132,19 +137,26 @@ export default async function SantriDashboard() {
   };
 
   // Calculate total ayat memorized
-  const totalAyat = records.reduce((sum, r) => sum + (r.ayatEnd - r.ayatStart + 1), 0);
+  const totalAyat = records.reduce(
+    (sum, r) => sum + (r.ayatEnd - r.ayatStart + 1),
+    0
+  );
 
   // Calculate total surahs with green status
-  const greenSurahs = Array.from(surahStatusMap.values()).filter((s) => s === "G").length;
+  const greenSurahs = Array.from(surahStatusMap.values()).filter(
+    (s) => s === "G"
+  ).length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-foreground">
           Assalamu&apos;alaikum, {santriData.fullName}
         </h1>
-        <p className="text-slate-600">Kelas: {santriData.className || "-"}</p>
+        <p className="text-muted-foreground">
+          Kelas: {santriData.className || "-"}
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -177,7 +189,9 @@ export default async function SantriDashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{greenSurahs}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {greenSurahs}
+            </div>
             <p className="text-xs text-muted-foreground">Dari 114 surat</p>
           </CardContent>
         </Card>
@@ -242,7 +256,7 @@ export default async function SantriDashboard() {
         <h2 className="text-xl font-semibold mb-4">Setoran Terakhir</h2>
         {records.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-slate-500">
+            <CardContent className="py-8 text-center text-muted-foreground">
               Belum ada riwayat setoran.
             </CardContent>
           </Card>
@@ -255,12 +269,14 @@ export default async function SantriDashboard() {
                   <CardContent className="py-4 flex items-center justify-between">
                     <div>
                       <p className="font-medium">{surah?.surahName}</p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Ayat {record.ayatStart} - {record.ayatEnd}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-slate-500">{record.date}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {record.date}
+                      </span>
                       <div
                         className={`w-8 h-8 rounded-full ${getColorClass(
                           record.colorStatus
