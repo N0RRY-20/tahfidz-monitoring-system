@@ -4,7 +4,6 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { user, userRole } from "@/db/schema/auth-schema";
 import { santriProfiles, classes } from "@/db/schema/tahfidz-schema";
-import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 function generateUsername(name: string): string {

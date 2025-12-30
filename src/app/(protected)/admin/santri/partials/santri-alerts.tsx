@@ -11,7 +11,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { Loader2 } from "lucide-react";
 
 interface ConfirmDialogProps {
   open: boolean;

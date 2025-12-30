@@ -6,13 +6,7 @@ import { Santri, Guru, Kelas } from "./partials/types";
 import { MappingDataTable } from "./partials/data-table";
 import { columns } from "./partials/columns";
 import { MappingTableSkeleton } from "./partials/table-skeleton";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 
 export default function MappingSantriPage() {

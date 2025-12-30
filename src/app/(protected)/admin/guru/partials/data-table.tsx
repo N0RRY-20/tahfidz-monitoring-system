@@ -7,7 +7,6 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconDotsVertical,
   IconLayoutColumns,
   IconPlus,
   IconSearch,

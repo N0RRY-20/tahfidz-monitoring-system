@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -111,7 +111,7 @@ export default function KelolaGuruPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     try {
       const res = await fetch(`/api/admin/guru/${id}`, {
         method: "DELETE",
@@ -127,7 +127,7 @@ export default function KelolaGuruPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal menghapus guru");
     }
-  };
+  }, []);
 
   const handleEdit = (guru: Guru) => {
     setEditingGuru(guru);
@@ -185,7 +185,7 @@ export default function KelolaGuruPage() {
         onEdit: handleEdit,
         onView: handleView,
       }),
-    []
+    [handleDelete]
   );
 
   if (loading) {

@@ -7,7 +7,7 @@ import {
   santriProfiles,
   quranMeta,
 } from "@/db/schema/tahfidz-schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export async function GET() {
   try {

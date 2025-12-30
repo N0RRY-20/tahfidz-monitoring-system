@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function proxy(request: NextRequest) {
+export async function proxy() {
   // In Next.js 16, proxy should be lightweight and NOT handle auth logic
   // Auth logic is handled by the protected layout server component
   // This avoids redirect loops between proxy and layout
