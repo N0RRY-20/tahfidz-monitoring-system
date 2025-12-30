@@ -7,7 +7,7 @@ import {
   santriProfiles,
   quranMeta,
 } from "@/db/schema/tahfidz-schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 interface LastSetoranRecord {
   santriId: string;

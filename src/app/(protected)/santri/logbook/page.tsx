@@ -4,27 +4,7 @@ import { db } from "@/db";
 import { santriProfiles, dailyRecords, quranMeta, recordTags, masterTags } from "@/db/schema/tahfidz-schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-
-function getColorClass(status: string) {
-  switch (status) {
-    case "G": return "bg-green-500";
-    case "Y": return "bg-yellow-500";
-    case "R": return "bg-red-500";
-    default: return "bg-gray-300";
-  }
-}
-
-function getStatusLabel(status: string) {
-  switch (status) {
-    case "G": return "Mutqin";
-    case "Y": return "Jayyid";
-    case "R": return "Rasib";
-    default: return "-";
-  }
-}
+import { LogbookHeader, SurahList, RecordCard } from "./partials";
 
 export default async function LogbookPage({
   searchParams,
@@ -54,7 +34,7 @@ export default async function LogbookPage({
     return (
       <div className="space-y-6">
         <Card>
-          <CardContent className="py-8 text-center text-slate-500">
+          <CardContent className="py-8 text-center text-muted-foreground">
             Profil santri belum dibuat.
           </CardContent>
         </Card>
@@ -123,99 +103,46 @@ export default async function LogbookPage({
     filteredRecords = records.filter(r => r.surahId === surahFilter);
   }
 
+  // Determine subtitle
+  const subtitle = juzFilter 
+    ? `Juz ${juzFilter}` 
+    : surahFilter 
+      ? `Surat ${filteredSurahs[0]?.surahName}` 
+      : "Semua Surat";
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/santri" className="p-2 hover:bg-slate-100 rounded-lg">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Logbook Hafalan
-          </h1>
-          <p className="text-slate-600">
-            {juzFilter ? `Juz ${juzFilter}` : surahFilter ? `Surat ${filteredSurahs[0]?.surahName}` : "Semua Surat"}
-          </p>
-        </div>
-      </div>
+      <LogbookHeader title="Logbook Hafalan" subtitle={subtitle} />
 
       {/* Surah list in this Juz */}
       {juzFilter && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Surat dalam Juz {juzFilter}</h2>
-          <div className="flex flex-wrap gap-2">
-            {filteredSurahs.map(surah => {
-              const surahRecords = records.filter(r => r.surahId === surah.id);
-              const lastRecord = surahRecords[0];
-              const status = lastRecord?.colorStatus || null;
-              
-              return (
-                <Link
-                  key={surah.id}
-                  href={`/santri/logbook?surah=${surah.id}`}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    status === "G" ? "bg-green-100 text-green-800 hover:bg-green-200" :
-                    status === "Y" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" :
-                    status === "R" ? "bg-red-100 text-red-800 hover:bg-red-200" :
-                    "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {surah.surahName}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <SurahList 
+          juzNumber={juzFilter} 
+          surahs={filteredSurahs} 
+          records={records} 
+        />
       )}
 
-      {/* Records Table */}
+      {/* Records List */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Riwayat Setoran</h2>
+        <h2 className="text-base md:text-lg font-semibold mb-3">
+          Riwayat Setoran
+        </h2>
+        
         {filteredRecords.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-slate-500">
+            <CardContent className="py-8 text-center text-muted-foreground">
               Belum ada riwayat setoran untuk filter ini.
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {filteredRecords.map(record => (
-              <Card key={record.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold">{record.surahName}</span>
-                        <Badge variant="secondary">
-                          {record.type === "ziyadah" ? "Ziyadah" : "Murajaah"}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-600">
-                        Ayat {record.ayatStart} - {record.ayatEnd}
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {(tagsByRecord[record.id] || []).map((tag, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      {record.notes && (
-                        <p className="text-sm text-slate-500 italic mt-2">
-                          &quot;{record.notes}&quot;
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm text-slate-500">{record.date}</p>
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white mt-1 ${getColorClass(record.colorStatus)}`}>
-                        {getStatusLabel(record.colorStatus)}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <RecordCard 
+                key={record.id} 
+                record={record} 
+                tags={tagsByRecord[record.id] || []} 
+              />
             ))}
           </div>
         )}

@@ -116,23 +116,32 @@ export default async function SantriDashboard() {
     juzMap.get(surah.juzNumber)?.push(surah);
   });
 
-  // Calculate juz status (lowest status of all surahs in juz)
+  // Calculate juz status - juz hijau hanya jika SEMUA surat di juz sudah hijau
   const getJuzStatus = (juzNumber: number) => {
     const juzSurahs = juzMap.get(juzNumber) || [];
+    if (juzSurahs.length === 0) return null;
+
+    let allGreen = true;
+    let hasAnyRecord = false;
     let hasRed = false;
     let hasYellow = false;
-    let hasGreen = false;
 
     juzSurahs.forEach((surah) => {
       const status = surahStatusMap.get(surah.id);
-      if (status === "R") hasRed = true;
-      else if (status === "Y") hasYellow = true;
-      else if (status === "G") hasGreen = true;
+      if (status) {
+        hasAnyRecord = true;
+        if (status !== "G") allGreen = false;
+        if (status === "R") hasRed = true;
+        else if (status === "Y") hasYellow = true;
+      } else {
+        allGreen = false;
+      }
     });
 
+    if (!hasAnyRecord) return null;
+    if (allGreen) return "G";
     if (hasRed) return "R";
     if (hasYellow) return "Y";
-    if (hasGreen) return "G";
     return null;
   };
 
@@ -147,6 +156,9 @@ export default async function SantriDashboard() {
     (s) => s === "G"
   ).length;
 
+  // Calculate total surahs yang sudah pernah disetor
+  const suratDisetor = surahStatusMap.size;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -160,138 +172,156 @@ export default async function SantriDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Setoran</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Surat Disetor</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{records.length}</div>
-            <p className="text-xs text-muted-foreground">Kali setoran</p>
+            <div className="text-xl md:text-2xl font-bold">{suratDisetor}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Dari 114 surat</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Ayat</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Total Ayat</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalAyat}</div>
-            <p className="text-xs text-muted-foreground">Ayat disetor</p>
+            <div className="text-xl md:text-2xl font-bold">{totalAyat}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Ayat disetor</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Surat Mutqin</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Surat Mutqin</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl md:text-2xl font-bold text-green-600">
               {greenSurahs}
             </div>
-            <p className="text-xs text-muted-foreground">Dari 114 surat</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Hafalan lancar</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Progress</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl md:text-2xl font-bold">
               {Math.round((greenSurahs / 114) * 100)}%
             </div>
-            <p className="text-xs text-muted-foreground">Menuju Khatam</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Menuju Khatam</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Heatmap Juz */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Heatmap Juz 1-30</h2>
-        <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2">
-          {Array.from({ length: 30 }, (_, i) => i + 1).map((juz) => {
-            const status = getJuzStatus(juz);
-            return (
-              <Link
-                key={juz}
-                href={`/santri/logbook?juz=${juz}`}
-                className={`aspect-square flex flex-col items-center justify-center rounded-lg ${getColorClass(
-                  status
-                )} hover:opacity-80 transition-opacity text-white font-medium`}
-              >
-                <span className="text-lg">{juz}</span>
-                <span className="text-[10px]">{getStatusLabel(status)}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg md:text-xl">Heatmap Juz 1-30</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 md:gap-3">
+            {Array.from({ length: 30 }, (_, i) => i + 1).map((juz) => {
+              const status = getJuzStatus(juz);
+              const isGray = !status;
+              return (
+                <Link
+                  key={juz}
+                  href={`/santri/logbook?juz=${juz}`}
+                  className={`aspect-square flex flex-col items-center justify-center rounded-lg transition-all
+                    ${isGray 
+                      ? "bg-muted border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 text-muted-foreground" 
+                      : `${getColorClass(status)} text-white shadow-sm hover:shadow-md hover:scale-105`
+                    }`}
+                >
+                  <span className="text-base md:text-lg font-semibold">{juz}</span>
+                  <span className="text-[9px] md:text-[10px]">{getStatusLabel(status)}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-sm">
+      <div className="flex flex-wrap gap-3 md:gap-4 text-xs md:text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-green-500"></div>
-          <span>Mutqin (Hijau)</span>
+          <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-green-500"></div>
+          <span>Mutqin</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-yellow-500"></div>
-          <span>Jayyid (Kuning)</span>
+          <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-yellow-500"></div>
+          <span>Jayyid</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-red-500"></div>
-          <span>Rasib (Merah)</span>
+          <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-red-500"></div>
+          <span>Rasib</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-gray-300"></div>
-          <span>Belum Disetor</span>
+          <div className="w-3 h-3 md:w-4 md:h-4 rounded border-2 border-dashed border-muted-foreground/30 bg-muted"></div>
+          <span>Belum</span>
         </div>
       </div>
 
       {/* Recent Records */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Setoran Terakhir</h2>
-        {records.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-lg md:text-xl">Setoran Terakhir</CardTitle>
+          {records.length > 5 && (
+            <Link 
+              href="/santri/logbook" 
+              className="text-sm text-primary hover:underline"
+            >
+              Lihat Semua
+            </Link>
+          )}
+        </CardHeader>
+        <CardContent>
+          {records.length === 0 ? (
+            <div className="py-6 text-center text-muted-foreground">
               Belum ada riwayat setoran.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-2">
-            {records.slice(0, 5).map((record, idx) => {
-              const surah = surahs.find((s) => s.id === record.surahId);
-              return (
-                <Card key={idx}>
-                  <CardContent className="py-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{surah?.surahName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Ayat {record.ayatStart} - {record.ayatEnd}
-                      </p>
-                    </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {records.slice(0, 5).map((record, idx) => {
+                const surah = surahs.find((s) => s.id === record.surahId);
+                return (
+                  <div 
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                  >
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">
-                        {record.date}
-                      </span>
                       <div
-                        className={`w-8 h-8 rounded-full ${getColorClass(
+                        className={`w-10 h-10 rounded-full ${getColorClass(
                           record.colorStatus
-                        )} flex items-center justify-center text-white text-xs font-bold`}
+                        )} flex items-center justify-center text-white text-xs font-bold shrink-0`}
                       >
                         {record.colorStatus}
                       </div>
+                      <div>
+                        <p className="font-medium text-sm md:text-base">{surah?.surahName}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          Ayat {record.ayatStart} - {record.ayatEnd}
+                        </p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      {record.date}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

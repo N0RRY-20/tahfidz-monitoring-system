@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence, easeInOut } from "framer-motion";
 import {
   Menu,
   X,
-  Zap,
   LayoutDashboard,
   BookOpen,
   User,
@@ -18,6 +17,15 @@ import { usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+
+// Custom hook to check if component is mounted (avoids setState in effect)
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
 
 interface NavItem {
   name: string;
@@ -39,14 +47,10 @@ export function SantriHeader({ userName }: SantriHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsMounted();
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -138,17 +142,17 @@ export function SantriHeader({ userName }: SantriHeaderProps) {
             >
               <Link href="/santri" className="flex items-center space-x-3">
                 <div className="relative">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 via-rose-600 to-rose-700 shadow-lg">
-                    <Zap className="h-5 w-5 text-white" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 shadow-lg">
+                    <BookOpen className="h-5 w-5 text-white" />
                   </div>
-                  <div className="absolute -top-1 -right-1 h-3 w-3 animate-pulse rounded-full bg-green-400"></div>
+                  <div className="absolute -top-1 -right-1 h-3 w-3 animate-pulse rounded-full bg-emerald-400"></div>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-foreground text-lg font-bold">
-                    Tahfidz
+                    SIM-Tahfidz
                   </span>
                   <span className="text-muted-foreground -mt-1 text-xs">
-                    Monitoring
+                    Portal Santri
                   </span>
                 </div>
               </Link>
