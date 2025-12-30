@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,7 @@ import {
   Lock,
   Copy,
   Check,
+  LayoutDashboard,
 } from "lucide-react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -46,6 +48,7 @@ const SparklesCore = dynamic(
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { data: session, isPending } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,19 +102,32 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-2">
             <ModeToggle />
             <div className="h-6 w-px bg-border/50 mx-2" />
-            <Link href="/login">
-              <Button
-                variant="ghost"
-                className="rounded-full px-6 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-              >
-                Masuk
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 rounded-full px-6">
-                Daftar Sekarang
-              </Button>
-            </Link>
+            {isPending ? (
+              <div className="h-9 w-24 bg-muted animate-pulse rounded-full" />
+            ) : session?.user ? (
+              <Link href="/dashboard">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 rounded-full px-6">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    className="rounded-full px-6 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                  >
+                    Masuk
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 rounded-full px-6">
+                    Daftar Sekarang
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -141,16 +157,36 @@ export default function Home() {
               className="md:hidden border-b bg-background px-4 pb-4 space-y-4 overflow-hidden shadow-xl"
             >
               <div className="grid gap-2 pt-2">
-                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
-                    Masuk
-                  </Button>
-                </Link>
-                <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Daftar Sekarang
-                  </Button>
-                </Link>
+                {session?.user ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
+                        Masuk
+                      </Button>
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                        Daftar Sekarang
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
