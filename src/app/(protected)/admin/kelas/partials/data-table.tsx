@@ -74,7 +74,7 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cari halaqah..."
+              placeholder="Cari kelas..."
               value={
                 (table.getColumn("name")?.getFilterValue() as string) ?? ""
               }
@@ -85,11 +85,11 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
             />
           </div>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto w-full sm:w-auto">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              <Button variant="outline" className="w-full sm:w-auto">
+                Kolom <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -113,11 +113,12 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button onClick={onAddKelas} className="w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Tambah Halaqah
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Tambah Kelas</span>
           </Button>
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -160,7 +161,7 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Tidak ada data halaqah.
+                  Tidak ada data kelas.
                 </TableCell>
               </TableRow>
             )}
@@ -169,8 +170,8 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+          {table.getFilteredRowModel().rows.length} baris dipilih.
         </div>
         <div className="space-x-2">
           <Button
@@ -179,7 +180,7 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            Sebelumnya
           </Button>
           <Button
             variant="outline"
@@ -187,7 +188,7 @@ export function KelasDataTable({ columns, data, onAddKelas }: DataTableProps) {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Berikutnya
           </Button>
         </div>
       </div>

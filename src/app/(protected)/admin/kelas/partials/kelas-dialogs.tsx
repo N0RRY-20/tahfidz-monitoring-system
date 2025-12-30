@@ -43,7 +43,7 @@ export function KelasFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) {
-      toast.error("Nama halaqah wajib diisi");
+      toast.error("Nama kelas wajib diisi");
       return;
     }
     onSubmit({ name, description });
@@ -57,11 +57,11 @@ export function KelasFormDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Nama Halaqah *</Label>
+            <Label>Nama Kelas *</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Contoh: Halaqah A, Halaqah B"
+              placeholder="Contoh: Kelas A, Kelas B"
               className="mt-1"
             />
           </div>
@@ -70,7 +70,7 @@ export function KelasFormDialog({
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Contoh: Halaqah tingkat dasar"
+              placeholder="Contoh: Kelas tingkat dasar"
               className="mt-1"
             />
           </div>

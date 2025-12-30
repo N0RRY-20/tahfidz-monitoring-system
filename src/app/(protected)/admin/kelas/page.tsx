@@ -28,7 +28,7 @@ export default function KelolaKelasPage() {
       const data = await res.json();
       setKelasList(data);
     } catch {
-      toast.error("Gagal memuat data halaqah");
+      toast.error("Gagal memuat data kelas");
     } finally {
       setLoading(false);
     }
@@ -52,16 +52,14 @@ export default function KelolaKelasPage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal menambah halaqah");
+        throw new Error(errorData.error || "Gagal menambah kelas");
       }
 
-      toast.success("Halaqah berhasil ditambahkan");
+      toast.success("Kelas berhasil ditambahkan");
       setCreateDialogOpen(false);
       fetchKelas();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Gagal menambah halaqah"
-      );
+      toast.error(err instanceof Error ? err.message : "Gagal menambah kelas");
     } finally {
       setSubmitting(false);
     }
@@ -82,16 +80,16 @@ export default function KelolaKelasPage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal mengupdate halaqah");
+        throw new Error(errorData.error || "Gagal mengupdate kelas");
       }
 
-      toast.success("Halaqah berhasil diupdate");
+      toast.success("Kelas berhasil diupdate");
       setEditDialogOpen(false);
       setEditingKelas(null);
       fetchKelas();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Gagal mengupdate halaqah"
+        err instanceof Error ? err.message : "Gagal mengupdate kelas"
       );
     } finally {
       setSubmitting(false);
@@ -108,16 +106,14 @@ export default function KelolaKelasPage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal menghapus halaqah");
+        throw new Error(errorData.error || "Gagal menghapus kelas");
       }
 
-      toast.success("Halaqah berhasil dihapus");
+      toast.success("Kelas berhasil dihapus");
       setDeleteData(null);
       fetchKelas();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Gagal menghapus halaqah"
-      );
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus kelas");
     } finally {
       setDeleting(false);
     }
@@ -141,10 +137,10 @@ export default function KelolaKelasPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-              Kelola Halaqah
+              Kelola Kelas
             </h1>
             <p className="text-sm text-muted-foreground">
-              Memuat data halaqah...
+              Memuat data kelas...
             </p>
           </div>
         </div>
@@ -158,12 +154,12 @@ export default function KelolaKelasPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-            Kelola Halaqah
+            Kelola Kelas
           </h1>
           <p className="text-sm text-muted-foreground flex items-center gap-2">
-            Manajemen data halaqah
+            Manajemen data kelas
             <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold font-mono transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary hover:bg-primary/20">
-              Total: {kelasList.length} Halaqah
+              Total: {kelasList.length} Kelas
             </span>
           </p>
         </div>
@@ -179,7 +175,7 @@ export default function KelolaKelasPage() {
       <KelasFormDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        title="Tambah Halaqah Baru"
+        title="Tambah Kelas Baru"
         onSubmit={handleCreate}
         submitting={submitting}
       />
@@ -188,7 +184,7 @@ export default function KelolaKelasPage() {
       <KelasFormDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        title="Edit Halaqah"
+        title="Edit Kelas"
         initialData={
           editingKelas
             ? {

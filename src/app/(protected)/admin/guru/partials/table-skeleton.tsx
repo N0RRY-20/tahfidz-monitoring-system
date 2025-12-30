@@ -14,18 +14,18 @@ export function GuruTableSkeleton() {
   return (
     <div className="w-full flex-col justify-start gap-6">
       {/* Header with search and buttons */}
-      <div className="flex items-center justify-between py-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-64" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4">
+        <div className="w-full sm:w-auto">
+          <Skeleton className="h-9 w-full sm:w-64" />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Skeleton className="h-8 w-24" />
           <Skeleton className="h-8 w-32" />
         </div>
       </div>
 
       {/* Table skeleton */}
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader className="bg-muted">
             <TableRow>

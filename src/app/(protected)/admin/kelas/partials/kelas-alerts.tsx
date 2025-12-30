@@ -32,10 +32,10 @@ export function DeleteAlert({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Hapus Halaqah?</AlertDialogTitle>
+          <AlertDialogTitle>Hapus Kelas?</AlertDialogTitle>
           <AlertDialogDescription>
-            Halaqah <strong>{data?.name}</strong> akan dihapus permanen.
-            Tindakan ini tidak dapat dibatalkan.
+            Kelas <strong>{data?.name}</strong> akan dihapus permanen. Tindakan
+            ini tidak dapat dibatalkan.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

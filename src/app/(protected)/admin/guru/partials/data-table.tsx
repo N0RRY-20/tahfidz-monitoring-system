@@ -99,17 +99,15 @@ export function GuruDataTable<TData, TValue>({
 
   return (
     <div className="w-full flex-col justify-start gap-6">
-      <div className="flex items-center justify-between py-4">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari guru..."
-              value={globalFilter ?? ""}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="pl-9 w-64"
-            />
-          </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4">
+        <div className="relative w-full sm:w-auto">
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari guru..."
+            value={globalFilter ?? ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-9 w-full sm:w-64"
+          />
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -151,7 +149,7 @@ export function GuruDataTable<TData, TValue>({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader className="bg-muted sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
