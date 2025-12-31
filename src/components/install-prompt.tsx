@@ -10,27 +10,25 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InstallPrompt() {
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  // Use lazy initialization to avoid setState in useEffect
+  const [isIOS] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+      !(window as unknown as { MSStream?: unknown }).MSStream
+    );
+  });
+  const [isStandalone] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(display-mode: standalone)").matches;
+  });
   const [showPrompt, setShowPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    // Check if already installed (standalone mode)
-    const isInStandalone = window.matchMedia(
-      "(display-mode: standalone)"
-    ).matches;
-    setIsStandalone(isInStandalone);
-
     // Don't show if already installed
-    if (isInStandalone) return;
-
-    // Check if iOS
-    const isIOSDevice =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-      !(window as unknown as { MSStream?: unknown }).MSStream;
-    setIsIOS(isIOSDevice);
+    if (isStandalone) return;
 
     // Check if dismissed recently (24 hours)
     const dismissedAt = localStorage.getItem("pwa-install-dismissed");
@@ -60,7 +58,7 @@ export function InstallPrompt() {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
       clearTimeout(timer);
     };
-  }, []);
+  }, [isStandalone]);
 
   const handleInstall = async () => {
     if (deferredPrompt) {

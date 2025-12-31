@@ -24,9 +24,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { IconLoader2 } from "@tabler/icons-react";
+import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Surah {
   id: number;
@@ -48,6 +49,10 @@ interface InputFormDrawerProps {
   surahList: Surah[];
   tagsList: Tag[];
   onSuccess: () => void;
+  todayStatus?: {
+    hasZiyadah: boolean;
+    hasMurajaah: boolean;
+  };
 }
 
 export function InputFormDrawer({
@@ -58,6 +63,7 @@ export function InputFormDrawer({
   surahList,
   tagsList,
   onSuccess,
+  todayStatus,
 }: InputFormDrawerProps) {
   const [submitting, setSubmitting] = useState(false);
 
@@ -200,6 +206,25 @@ export function InputFormDrawer({
                 </Label>
               </div>
             </RadioGroup>
+            {/* Alert if already inputted today */}
+            {todayStatus?.hasZiyadah && type === "ziyadah" && (
+              <Alert variant="destructive" className="mt-2">
+                <IconAlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Santri sudah memiliki setoran Ziyadah hari ini. Silakan edit
+                  data yang sudah ada di menu Riwayat.
+                </AlertDescription>
+              </Alert>
+            )}
+            {todayStatus?.hasMurajaah && type === "murajaah" && (
+              <Alert variant="destructive" className="mt-2">
+                <IconAlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Santri sudah memiliki setoran Murajaah hari ini. Silakan edit
+                  data yang sudah ada di menu Riwayat.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           {/* Pilih Surat */}

@@ -124,6 +124,11 @@ export const dailyRecords = pgTable(
     index("daily_records_guruId_idx").on(table.guruId),
     index("daily_records_date_idx").on(table.date),
     index("daily_records_surahId_idx").on(table.surahId),
+    index("daily_records_santri_date_type_idx").on(
+      table.santriId,
+      table.date,
+      table.type
+    ),
   ]
 );
 

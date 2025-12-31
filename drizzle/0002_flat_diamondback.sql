@@ -1,0 +1,1 @@
+CREATE INDEX "daily_records_santri_date_type_idx" ON "daily_records" USING btree ("santri_id","date","type");

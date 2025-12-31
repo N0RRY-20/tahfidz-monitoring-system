@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { dailyRecords, recordTags, santriProfiles } from "@/db/schema/tahfidz-schema";
-import { eq } from "drizzle-orm";
+import {
+  dailyRecords,
+  recordTags,
+  santriProfiles,
+} from "@/db/schema/tahfidz-schema";
+import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export async function POST(request: NextRequest) {
@@ -17,10 +21,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { santriId, type, surahId, ayatStart, ayatEnd, colorStatus, tagIds, notes } = body;
+    const {
+      santriId,
+      type,
+      surahId,
+      ayatStart,
+      ayatEnd,
+      colorStatus,
+      tagIds,
+      notes,
+    } = body;
 
     // Validate required fields
-    if (!santriId || !surahId || !ayatStart || !ayatEnd || !colorStatus || !type) {
+    if (
+      !santriId ||
+      !surahId ||
+      !ayatStart ||
+      !ayatEnd ||
+      !colorStatus ||
+      !type
+    ) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -37,10 +57,7 @@ export async function POST(request: NextRequest) {
 
     // Validate type
     if (!["ziyadah", "murajaah"].includes(type)) {
-      return NextResponse.json(
-        { error: "Invalid type" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
     // Check if santri is assigned to this guru
@@ -51,10 +68,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (santri.length === 0) {
-      return NextResponse.json(
-        { error: "Santri not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Santri not found" }, { status: 404 });
     }
 
     if (santri[0].assignedGuruId !== session.user.id) {
@@ -67,6 +81,30 @@ export async function POST(request: NextRequest) {
     // Create record
     const recordId = randomUUID();
     const today = new Date().toISOString().split("T")[0];
+
+    // Check if record already exists for this santri, type, and date
+    const existingRecord = await db
+      .select({ id: dailyRecords.id })
+      .from(dailyRecords)
+      .where(
+        and(
+          eq(dailyRecords.santriId, santriId),
+          eq(dailyRecords.type, type),
+          eq(dailyRecords.date, today)
+        )
+      )
+      .limit(1);
+
+    if (existingRecord.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Santri sudah memiliki setoran ${
+            type === "ziyadah" ? "Ziyadah" : "Murajaah"
+          } hari ini. Silakan edit data yang sudah ada.`,
+        },
+        { status: 409 }
+      );
+    }
 
     await db.insert(dailyRecords).values({
       id: recordId,

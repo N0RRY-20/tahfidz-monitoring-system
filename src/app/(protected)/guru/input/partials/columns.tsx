@@ -8,6 +8,8 @@ import { IconPlus, IconBook, IconRotate } from "@tabler/icons-react";
 interface SetoranRecord {
   date: string;
   surahName: string;
+  ayatStart: number;
+  ayatEnd: number;
   colorStatus: "G" | "Y" | "R";
 }
 
@@ -55,6 +57,9 @@ function SetoranCell({
     return <span className="text-muted-foreground text-xs">Belum ada</span>;
   }
 
+  const today = new Date().toISOString().split("T")[0];
+  const isToday = record.date === today;
+
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center gap-1.5">
@@ -63,7 +68,14 @@ function SetoranCell({
         ) : (
           <IconRotate className="h-3 w-3 text-orange-500" />
         )}
-        <span className="text-sm font-medium">{record.surahName}</span>
+        <span className="text-sm font-medium">
+          {record.surahName}: {record.ayatStart}-{record.ayatEnd}
+        </span>
+        {isToday && (
+          <Badge className="text-[10px] px-1.5 py-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+            Hari Ini
+          </Badge>
+        )}
       </div>
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground">{record.date}</span>

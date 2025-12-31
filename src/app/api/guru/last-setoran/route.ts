@@ -13,6 +13,8 @@ interface LastSetoranRecord {
   santriId: string;
   date: string;
   surahName: string;
+  ayatStart: number;
+  ayatEnd: number;
   colorStatus: "G" | "Y" | "R";
 }
 
@@ -33,6 +35,8 @@ export async function GET() {
         date: dailyRecords.date,
         type: dailyRecords.type,
         surahName: quranMeta.surahName,
+        ayatStart: dailyRecords.ayatStart,
+        ayatEnd: dailyRecords.ayatEnd,
         colorStatus: dailyRecords.colorStatus,
         createdAt: dailyRecords.createdAt,
       })
@@ -72,6 +76,8 @@ export async function GET() {
           santriId: record.santriId,
           date: record.date,
           surahName: record.surahName,
+          ayatStart: record.ayatStart,
+          ayatEnd: record.ayatEnd,
           colorStatus: record.colorStatus,
         };
       } else if (record.type === "murajaah" && !data.lastMurajaah) {
@@ -79,6 +85,8 @@ export async function GET() {
           santriId: record.santriId,
           date: record.date,
           surahName: record.surahName,
+          ayatStart: record.ayatStart,
+          ayatEnd: record.ayatEnd,
           colorStatus: record.colorStatus,
         };
       }

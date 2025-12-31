@@ -30,11 +30,15 @@ interface LastSetoran {
   lastZiyadah: {
     date: string;
     surahName: string;
+    ayatStart: number;
+    ayatEnd: number;
     colorStatus: "G" | "Y" | "R";
   } | null;
   lastMurajaah: {
     date: string;
     surahName: string;
+    ayatStart: number;
+    ayatEnd: number;
     colorStatus: "G" | "Y" | "R";
   } | null;
 }
@@ -179,17 +183,28 @@ export default function InputSetoranPage() {
       </Card>
 
       {/* Input Form Drawer */}
-      {selectedSantri && (
-        <InputFormDrawer
-          open={drawerOpen}
-          onOpenChange={setDrawerOpen}
-          santriId={selectedSantri.id}
-          santriName={selectedSantri.name}
-          surahList={surahList}
-          tagsList={tagsList}
-          onSuccess={handleSuccess}
-        />
-      )}
+      {selectedSantri &&
+        (() => {
+          const setoranData = lastSetoranMap[selectedSantri.id];
+          const today = new Date().toISOString().split("T")[0];
+          const todayStatus = {
+            hasZiyadah: setoranData?.lastZiyadah?.date === today,
+            hasMurajaah: setoranData?.lastMurajaah?.date === today,
+          };
+
+          return (
+            <InputFormDrawer
+              open={drawerOpen}
+              onOpenChange={setDrawerOpen}
+              santriId={selectedSantri.id}
+              santriName={selectedSantri.name}
+              surahList={surahList}
+              tagsList={tagsList}
+              onSuccess={handleSuccess}
+              todayStatus={todayStatus}
+            />
+          );
+        })()}
     </div>
   );
 }

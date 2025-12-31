@@ -20,7 +20,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { colorStatus, notesText } = body;
+    const { colorStatus, notesText, ayatStart, ayatEnd } = body;
 
     // Verify ownership and get record
     const record = await db
@@ -58,11 +58,23 @@ export async function PUT(
       );
     }
 
+    // Validate ayat range
+    if (ayatStart !== undefined && ayatEnd !== undefined) {
+      if (ayatStart < 1 || ayatEnd < ayatStart) {
+        return NextResponse.json(
+          { error: "Range ayat tidak valid" },
+          { status: 400 }
+        );
+      }
+    }
+
     await db
       .update(dailyRecords)
       .set({
         colorStatus,
         notesText: notesText || null,
+        ...(ayatStart !== undefined && { ayatStart }),
+        ...(ayatEnd !== undefined && { ayatEnd }),
       })
       .where(eq(dailyRecords.id, id));
 

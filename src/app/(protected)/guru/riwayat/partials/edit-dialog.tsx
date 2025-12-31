@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,14 +40,22 @@ export function EditDialog({
 }: EditDialogProps) {
   const [colorStatus, setColorStatus] = useState<"G" | "Y" | "R">("G");
   const [notes, setNotes] = useState("");
+  const [ayatStart, setAyatStart] = useState(1);
+  const [ayatEnd, setAyatEnd] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
-  // Sync state when record changes
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && record) {
+  // Sync state when record changes or dialog opens
+  useEffect(() => {
+    if (open && record) {
       setColorStatus(record.colorStatus);
       setNotes(record.notes || "");
+      setAyatStart(record.ayatStart);
+      setAyatEnd(record.ayatEnd);
     }
+  }, [open, record]);
+
+  // Handle dialog open/close
+  const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen);
   };
 
@@ -61,6 +70,8 @@ export function EditDialog({
         body: JSON.stringify({
           colorStatus,
           notesText: notes,
+          ayatStart,
+          ayatEnd,
         }),
       });
 
@@ -91,11 +102,35 @@ export function EditDialog({
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-1">
               <p className="font-medium">{record.santriName}</p>
               <p className="text-sm text-muted-foreground">
-                {record.surahName}, Ayat {record.ayatStart} - {record.ayatEnd}
+                {record.surahName}
               </p>
               <Badge variant="secondary">
                 {record.type === "ziyadah" ? "Ziyadah" : "Murajaah"}
               </Badge>
+            </div>
+
+            {/* Ayat Range */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Ayat Mulai</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={ayatStart}
+                  onChange={(e) => setAyatStart(parseInt(e.target.value) || 1)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Ayat Akhir</Label>
+                <Input
+                  type="number"
+                  min={ayatStart}
+                  value={ayatEnd}
+                  onChange={(e) => setAyatEnd(parseInt(e.target.value) || 1)}
+                  className="mt-1"
+                />
+              </div>
             </div>
 
             {/* Status Warna */}
