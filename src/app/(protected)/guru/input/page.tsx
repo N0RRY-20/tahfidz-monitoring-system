@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { getJakartaDateString } from "@/lib/date";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getColumns, type SantriData } from "./partials/columns";
 import { SantriTable } from "./partials/santri-table";
@@ -186,11 +187,26 @@ export default function InputSetoranPage() {
       {selectedSantri &&
         (() => {
           const setoranData = lastSetoranMap[selectedSantri.id];
-          const today = new Date().toISOString().split("T")[0];
-          const todayStatus = {
-            hasZiyadah: setoranData?.lastZiyadah?.date === today,
-            hasMurajaah: setoranData?.lastMurajaah?.date === today,
-          };
+          const today = getJakartaDateString();
+
+          // Prepare today's setoran info for nyicil mode
+          const todayZiyadah =
+            setoranData?.lastZiyadah?.date === today
+              ? {
+                  surahName: setoranData.lastZiyadah.surahName,
+                  ayatStart: setoranData.lastZiyadah.ayatStart,
+                  ayatEnd: setoranData.lastZiyadah.ayatEnd,
+                }
+              : null;
+
+          const todayMurajaah =
+            setoranData?.lastMurajaah?.date === today
+              ? {
+                  surahName: setoranData.lastMurajaah.surahName,
+                  ayatStart: setoranData.lastMurajaah.ayatStart,
+                  ayatEnd: setoranData.lastMurajaah.ayatEnd,
+                }
+              : null;
 
           return (
             <InputFormDrawer
@@ -201,7 +217,8 @@ export default function InputSetoranPage() {
               surahList={surahList}
               tagsList={tagsList}
               onSuccess={handleSuccess}
-              todayStatus={todayStatus}
+              todayZiyadah={todayZiyadah}
+              todayMurajaah={todayMurajaah}
             />
           );
         })()}

@@ -8,6 +8,7 @@ import {
   quranMeta,
 } from "@/db/schema/tahfidz-schema";
 import { eq, sql, gte } from "drizzle-orm";
+import { getJakartaDateString, getJakartaMonthStartString } from "@/lib/date";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users,
@@ -46,17 +47,15 @@ export default async function AdminDashboardPage() {
     .select({ count: sql<number>`count(*)` })
     .from(dailyRecords);
 
-  // Get today's setoran
-  const today = new Date().toISOString().split("T")[0];
+  // Get today's setoran (WIB timezone)
+  const today = getJakartaDateString();
   const todaySetoran = await db
     .select({ count: sql<number>`count(*)` })
     .from(dailyRecords)
     .where(eq(dailyRecords.date, today));
 
-  // Get this month's setoran
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  const monthStart = startOfMonth.toISOString().split("T")[0];
+  // Get this month's setoran (WIB timezone)
+  const monthStart = getJakartaMonthStartString();
   const monthSetoran = await db
     .select({ count: sql<number>`count(*)` })
     .from(dailyRecords)

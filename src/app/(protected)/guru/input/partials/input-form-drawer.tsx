@@ -24,7 +24,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
+import { IconLoader2, IconInfoCircle } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -41,6 +41,12 @@ interface Tag {
   tagText: string;
 }
 
+interface TodaySetoranInfo {
+  surahName: string;
+  ayatStart: number;
+  ayatEnd: number;
+}
+
 interface InputFormDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -49,10 +55,8 @@ interface InputFormDrawerProps {
   surahList: Surah[];
   tagsList: Tag[];
   onSuccess: () => void;
-  todayStatus?: {
-    hasZiyadah: boolean;
-    hasMurajaah: boolean;
-  };
+  todayZiyadah?: TodaySetoranInfo | null;
+  todayMurajaah?: TodaySetoranInfo | null;
 }
 
 export function InputFormDrawer({
@@ -63,7 +67,8 @@ export function InputFormDrawer({
   surahList,
   tagsList,
   onSuccess,
-  todayStatus,
+  todayZiyadah,
+  todayMurajaah,
 }: InputFormDrawerProps) {
   const [submitting, setSubmitting] = useState(false);
 
@@ -206,22 +211,30 @@ export function InputFormDrawer({
                 </Label>
               </div>
             </RadioGroup>
-            {/* Alert if already inputted today */}
-            {todayStatus?.hasZiyadah && type === "ziyadah" && (
-              <Alert variant="destructive" className="mt-2">
-                <IconAlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Santri sudah memiliki setoran Ziyadah hari ini. Silakan edit
-                  data yang sudah ada di menu Riwayat.
+            {/* Info if already inputted today (nyicil mode) */}
+            {todayZiyadah && type === "ziyadah" && (
+              <Alert className="mt-2 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+                <IconInfoCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-blue-700 dark:text-blue-300">
+                  Santri telah setor hari ini:{" "}
+                  <strong>QS {todayZiyadah.surahName}</strong> Ayat{" "}
+                  <strong>
+                    {todayZiyadah.ayatStart}-{todayZiyadah.ayatEnd}
+                  </strong>
+                  . Input baru akan menggabungkan data.
                 </AlertDescription>
               </Alert>
             )}
-            {todayStatus?.hasMurajaah && type === "murajaah" && (
-              <Alert variant="destructive" className="mt-2">
-                <IconAlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Santri sudah memiliki setoran Murajaah hari ini. Silakan edit
-                  data yang sudah ada di menu Riwayat.
+            {todayMurajaah && type === "murajaah" && (
+              <Alert className="mt-2 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+                <IconInfoCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-blue-700 dark:text-blue-300">
+                  Santri telah setor hari ini:{" "}
+                  <strong>QS {todayMurajaah.surahName}</strong> Ayat{" "}
+                  <strong>
+                    {todayMurajaah.ayatStart}-{todayMurajaah.ayatEnd}
+                  </strong>
+                  . Input baru akan menggabungkan data.
                 </AlertDescription>
               </Alert>
             )}

@@ -8,6 +8,7 @@ import {
   quranMeta,
 } from "@/db/schema/tahfidz-schema";
 import { eq, sql, and, gte, desc } from "drizzle-orm";
+import { getJakartaDateString, getJakartaMonthStartString } from "@/lib/date";
 import { StatsCards } from "./partials/stats-cards";
 import { SantriList } from "./partials/santri-list";
 
@@ -72,8 +73,8 @@ export default async function GuruDashboard() {
     }
   }
 
-  // Get today's date for filtering
-  const today = new Date().toISOString().split("T")[0];
+  // Get today's date for filtering (WIB timezone)
+  const today = getJakartaDateString();
 
   // Get today's records count (separate ziyadah and murajaah)
   const todayZiyadah = await db
@@ -98,10 +99,8 @@ export default async function GuruDashboard() {
       )
     );
 
-  // Get total records this month
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  const monthStart = startOfMonth.toISOString().split("T")[0];
+  // Get total records this month (WIB timezone)
+  const monthStart = getJakartaMonthStartString();
 
   const monthRecords = await db
     .select({ count: sql<number>`cast(count(*) as integer)` })

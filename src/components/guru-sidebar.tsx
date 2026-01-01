@@ -7,6 +7,7 @@ import {
   IconHistory,
   IconBook,
   Icon123,
+  IconClipboardList,
 } from "@tabler/icons-react";
 
 import { AdminNavMain } from "@/components/admin-nav-main";
@@ -26,6 +27,11 @@ const guruNavMain = [
     title: "Dashboard",
     url: "/guru",
     icon: IconDashboard,
+  },
+  {
+    title: "Belum Setor",
+    url: "/guru/belum-setor",
+    icon: IconClipboardList,
   },
   {
     title: "Input Setoran",

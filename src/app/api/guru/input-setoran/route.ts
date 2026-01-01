@@ -9,6 +9,7 @@ import {
 } from "@/db/schema/tahfidz-schema";
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { getJakartaDateString } from "@/lib/date";
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,13 +79,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create record
-    const recordId = randomUUID();
-    const today = new Date().toISOString().split("T")[0];
+    const today = getJakartaDateString();
 
     // Check if record already exists for this santri, type, and date
     const existingRecord = await db
-      .select({ id: dailyRecords.id })
+      .select({
+        id: dailyRecords.id,
+        surahId: dailyRecords.surahId,
+        ayatStart: dailyRecords.ayatStart,
+        ayatEnd: dailyRecords.ayatEnd,
+        notesText: dailyRecords.notesText,
+      })
       .from(dailyRecords)
       .where(
         and(
@@ -95,16 +100,68 @@ export async function POST(request: NextRequest) {
       )
       .limit(1);
 
+    // MERGE/UPSERT LOGIC
     if (existingRecord.length > 0) {
-      return NextResponse.json(
-        {
-          error: `Santri sudah memiliki setoran ${
-            type === "ziyadah" ? "Ziyadah" : "Murajaah"
-          } hari ini. Silakan edit data yang sudah ada.`,
-        },
-        { status: 409 }
-      );
+      const existing = existingRecord[0];
+
+      // Phase 1: Hanya support surat yang sama
+      if (existing.surahId !== surahId) {
+        return NextResponse.json(
+          {
+            error: `Santri sudah memiliki setoran ${
+              type === "ziyadah" ? "Ziyadah" : "Murajaah"
+            } hari ini dengan surat berbeda. Nyicil lintas surat belum didukung (akan hadir di Phase 2).`,
+          },
+          { status: 409 }
+        );
+      }
+
+      // Merge logic: MIN ayatStart, MAX ayatEnd, gabung notes
+      const mergedAyatStart = Math.min(existing.ayatStart, ayatStart);
+      const mergedAyatEnd = Math.max(existing.ayatEnd, ayatEnd);
+
+      // Gabung catatan (abaikan yang kosong/null)
+      let mergedNotes: string | null = null;
+      if (existing.notesText && notes) {
+        mergedNotes = `${existing.notesText}\n${notes}`;
+      } else if (existing.notesText) {
+        mergedNotes = existing.notesText;
+      } else if (notes) {
+        mergedNotes = notes;
+      }
+
+      // Update existing record
+      await db
+        .update(dailyRecords)
+        .set({
+          ayatStart: mergedAyatStart,
+          ayatEnd: mergedAyatEnd,
+          colorStatus, // Warna terakhir
+          notesText: mergedNotes,
+        })
+        .where(eq(dailyRecords.id, existing.id));
+
+      // Update tags: hapus yang lama, masukkan yang baru
+      await db.delete(recordTags).where(eq(recordTags.recordId, existing.id));
+      if (tagIds && tagIds.length > 0) {
+        await db.insert(recordTags).values(
+          tagIds.map((tagId: string) => ({
+            recordId: existing.id,
+            tagId,
+          }))
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        id: existing.id,
+        merged: true,
+        mergedRange: { ayatStart: mergedAyatStart, ayatEnd: mergedAyatEnd },
+      });
     }
+
+    // CREATE new record (belum ada hari ini)
+    const recordId = randomUUID();
 
     await db.insert(dailyRecords).values({
       id: recordId,
@@ -129,7 +186,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, id: recordId });
+    return NextResponse.json({ success: true, id: recordId, merged: false });
   } catch (error) {
     console.error("Error creating setoran:", error);
     return NextResponse.json(

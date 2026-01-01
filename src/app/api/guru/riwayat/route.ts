@@ -11,6 +11,7 @@ import {
   classes,
 } from "@/db/schema/tahfidz-schema";
 import { eq, desc, and, gte } from "drizzle-orm";
+import { getJakartaDateString, getJakartaDateStringDaysAgo } from "@/lib/date";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,24 +27,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get("filter") || "7days";
 
-    // Calculate date limit based on filter
-    const now = new Date();
+    // Calculate date limit based on filter (using WIB timezone)
     let dateLimit: string;
 
     switch (filter) {
       case "today":
-        dateLimit = now.toISOString().split("T")[0];
+        dateLimit = getJakartaDateString();
         break;
       case "30days":
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        dateLimit = thirtyDaysAgo.toISOString().split("T")[0];
+        dateLimit = getJakartaDateStringDaysAgo(30);
         break;
       case "7days":
       default:
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        dateLimit = sevenDaysAgo.toISOString().split("T")[0];
+        dateLimit = getJakartaDateStringDaysAgo(7);
         break;
     }
 

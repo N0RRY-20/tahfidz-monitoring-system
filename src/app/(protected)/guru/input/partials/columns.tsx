@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IconPlus, IconBook, IconRotate } from "@tabler/icons-react";
+import { getJakartaDateString } from "@/lib/date";
 
 interface SetoranRecord {
   date: string;
@@ -57,7 +58,7 @@ function SetoranCell({
     return <span className="text-muted-foreground text-xs">Belum ada</span>;
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getJakartaDateString();
   const isToday = record.date === today;
 
   return (
